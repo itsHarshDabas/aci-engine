@@ -1,0 +1,34 @@
+{
+ "aci": 1,
+ "name": "slime",
+ "w": 5,
+ "h": 2,
+ "fps": 3,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     " __",
+     "(oo)"
+    ],
+    "colors": [
+     " aa",
+     "aaaa"
+    ]
+   },
+   {
+    "text": [
+     " .--.",
+     "(oo)"
+    ],
+    "colors": [
+     " aaaa",
+     "aaaa"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#6bf0a0"
+ }
+}

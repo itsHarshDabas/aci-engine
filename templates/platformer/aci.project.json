@@ -1,0 +1,22 @@
+{
+ "aci": "project",
+ "name": "Platformer",
+ "version": "0.1.0",
+ "startScene": "main",
+ "scenes": [
+  {
+   "name": "main",
+   "file": "scenes/main.scene.json"
+  },
+  {
+   "name": "win",
+   "file": "scenes/win.scene.json"
+  }
+ ],
+ "settings": {
+  "fontSize": 14,
+  "background": "#0a1030"
+ },
+ "template": null,
+ "created": "2026-11-17T00:00:00.000Z"
+}

@@ -1,0 +1,9 @@
+{
+ "name": "Platformer",
+ "description": "Run and jump across platforms, grab coins, dodge spikes and slimes, and reach the flag.",
+ "tags": [
+  "platformer",
+  "physics",
+  "scrolling"
+ ]
+}

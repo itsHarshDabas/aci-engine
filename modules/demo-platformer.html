@@ -1,0 +1,87 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI Platformer Demo</title>
+<style>html,body{margin:0;background:#070a14;color:#d8def0;font-family:monospace}#screen{display:grid;place-items:center;min-height:100vh}p{text-align:center;margin:6px;color:#8490ae}</style>
+<div id="screen"></div><p>Arrows/A-D move, Space/Up jump, stomp enemies, collect *, reach the door.</p>
+<script src="../aci.js"></script>
+<script src="physics.js"></script>
+<script src="tilemap.js"></script>
+<script src="scenes.js"></script>
+<script src="input.js"></script>
+<script>
+// Plugins (physics, tilemap, scenes) attach themselves to every game made after they load.
+const G = window.G = ACI.game('#screen', { cols: 60, rows: 22, fontSize: 14 });
+G.physics.gravity = 60;
+
+const LEVEL = `
+################################################################################
+#                                                                              #
+#                                                                              #
+#                                                                              #
+#                                                                              #
+#                                                                              #
+#                                                                              #
+#                                                                       E      #
+#                                                               #############  #
+#                                                                              #
+#                                                                              #
+#                             e  c  c  c                                       #
+#                           ###############                   ###########      #
+#                                                                              #
+#                                                                              #
+#              c  c                                 c  c                       #
+#           ###########                         ###########                    #
+#                                                                              #
+#                                   #                                          #
+#  P                      e         #   c   c                                  #
+################################################################################
+################################################################################
+`;
+const LEGEND = { '#': { char: '#', color: '#8a7a55', solid: true }, 'E': { char: 'H', color: '#e8c870' } };
+
+const hero  = ACI.sprite({ idle: [' o \n/|\\\n/ \\'], walk: [' o \n/|\\\n/ >', ' o \n/|\\\n< \\'] }, { color: '#7cc96d', fps: 8 });
+const foe   = ACI.sprite({ default: ['/^\\\n"""', '/^\\\n=""'] }, { color: '#e06c75', fps: 4 });
+const coin  = ACI.sprite({ default: ['*', '+'] }, { color: '#e8c870', fps: 3 });
+
+G.scene('title', {
+  update(dt, g) { if (g.key(' ', 'Enter')) { g.state.score = 0; g.goto('play'); } },
+  draw(g) {
+    g.screen.text(20, 8, 'A S C I   R U N N E R', '#e8c870');
+    g.screen.text(19, 11, 'press SPACE to start', Math.floor(g.time * 2) % 2 ? '#fff' : '#8490ae');
+  },
+});
+
+G.scene('play', {
+  enter(g) {
+    g.state.score = g.state.score || 0;
+    const map = g.tilemap(LEVEL, LEGEND, { name: 'level1', y: 1 }/* y:1 leaves row 0 free for the HUD */);
+    const player = this.player = g.add(hero, { x: 3, y: 17, vx: 0, vy: 0, solid: true, friction: 12, tag: 'player' });
+    map.spawn('P', (x, y) => { player.x = x; player.y = y - player.h + 1; });
+    map.spawn('c', (x, y) => g.add(coin, { x, y, trigger: true, tag: 'coin', onTrigger(o) { if (o === player) { g.state.score++; g.remove(this); } } }));
+    map.spawn('e', (x, y) => { const e = g.add(foe, { x, y: y - 1, vx: 5, solid: true, tag: 'enemy' }); e.update = () => {
+      const ahead = e.vx > 0 ? e.x + e.w + 0.2 : e.x - 0.2;
+      if (e.hitWall || !g.tilemap.solidAt(ahead, e.y + e.h + 0.3)) e.vx = -e.vx || 5; }; });
+    map.spawn('E', (x, y) => g.add(ACI.sprite('H', { color: '#e8c870' }), { x, y, trigger: true, tag: 'exit', onTrigger(o) { if (o === player) g.goto('win'); } }));
+    player.onCollide = o => {
+      if (!o || o.tag !== 'enemy') return;
+      if (player.vy > 0 && player.y + player.h - 1 < o.y + 0.8) { g.remove(o); player.vy = -22; g.state.score += 5; }
+      else g.goto('title', null, { transition: 'wipe' });
+    };
+    g.follow(player);
+    g.state.watch('score', n => player.say('score ' + n, 0.8));
+  },
+  update(dt, g) {
+    const p = this.player, move = (g.key('ArrowRight', 'd') ? 1 : 0) - (g.key('ArrowLeft', 'a') ? 1 : 0);
+    if (move) { p.vx = move * 14; p.flipX = move < 0; p.play('walk'); } else p.play('idle');
+    if (p.grounded && g.key(' ', 'ArrowUp', 'w')) p.vy = -30;
+  },
+  draw(g) { for (let x = 0; x < g.viewCols; x++) g.screen.put(x, 0, ' ', '#e8c870', '#0a0e1a'); g.screen.text(1, 0, 'SCORE ' + g.state.score, '#e8c870'); },  // HUD bar
+});
+
+G.scene('win', {
+  update(dt, g) { if (g.key('Enter')) g.goto('title'); },
+  draw(g) { g.screen.text(22, 9, 'YOU WIN!  score ' + g.state.score, '#7cc96d'); g.screen.text(21, 12, 'press ENTER', '#8490ae'); },
+});
+
+G.goto('title');
+</script>

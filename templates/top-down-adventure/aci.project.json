@@ -1,0 +1,22 @@
+{
+ "aci": "project",
+ "name": "Top-down adventure",
+ "version": "0.1.0",
+ "startScene": "main",
+ "scenes": [
+  {
+   "name": "main",
+   "file": "scenes/main.scene.json"
+  },
+  {
+   "name": "house",
+   "file": "scenes/house.scene.json"
+  }
+ ],
+ "settings": {
+  "fontSize": 14,
+  "background": "#0a0e1a"
+ },
+ "template": null,
+ "created": "2026-11-17T00:00:00.000Z"
+}

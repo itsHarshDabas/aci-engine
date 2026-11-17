@@ -1,0 +1,443 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "main",
+ "world": {
+  "cols": 140,
+  "rows": 60
+ },
+ "environment": {
+  "preset": "pond",
+  "params": {
+   "size": 0.15,
+   "grass": "#2f7d46"
+  }
+ },
+ "gravity": 0,
+ "camera": {
+  "follow": "hero"
+ },
+ "tilemaps": [
+  {
+   "name": "Trees",
+   "rows": [
+    "                                                                                                                                            ",
+    "                                                             T      T   T       T T                                                         ",
+    "               T                        T                              T               T    T                                               ",
+    "     T                                                                    TT         T                   T                                  ",
+    "                T                          T                                                                                                ",
+    "                                                   T            T                           T      T                                        ",
+    "                  T      TT  T    T                                                                   T T         T               T T       ",
+    "                    T      T  T  T                    T                 T                   T                                         TT  T ",
+    "                                     T   T       T    TT                                     T                                              ",
+    "                               T    T                   T                                      T                                            ",
+    "      T     T                T    TT     TT                                                                                     T           ",
+    "                     T    T   T T           T T   T                                                                           T T           ",
+    "             T T            T   T  T                                                                                            T           ",
+    "                   T T          T                             T                                                                             ",
+    "      T    T          T                            T        T                                                                               ",
+    "      T         T      TTT                         T            T          T                   TT T                                         ",
+    "         T                                                            T T                                                                   ",
+    "    T         T   T                                        T                                T                                               ",
+    "    T     T              T T                                                                    T                                           ",
+    "     T    T   T                  T     T                                       TT                                              T            ",
+    "            T          T                                                           T T            T                                         ",
+    "                                                                                                                                            ",
+    "                                                                                           T   T  T                               T         ",
+    "                                            T                                                  T                                            ",
+    "                                        T                                                                                           T       ",
+    "                                                                                               T T                                          ",
+    "                                          T                                                           T   T   T        T                    ",
+    "                                                                                                      TT     T T    T       T      TT       ",
+    "                                            T                                                           T  T     T  T T                 T   ",
+    "                                        T                                                         T    T                                    ",
+    "                                                                                                  TT T                                      ",
+    "                                                                                                                                            ",
+    "                                                                                                       T                         T          ",
+    "                                                                                                     T  T                                   ",
+    "                                                                                                  T                     T T                 ",
+    "                                                                                                 T  TTT                             T       ",
+    "                                                                                                 T                                          ",
+    "                                                                                                        T T  T                 T            ",
+    "  T    T            T                                                                                T                      T               ",
+    "                              T                                                                                                             ",
+    "         T      T                                                                                           T                               ",
+    "                                      T     T                                                                                               ",
+    "                                                                                                                                            ",
+    "                                                                                                                                            ",
+    "          T                                                                              T                                        T         ",
+    "        T                                                                                                                             T     ",
+    "  T                    T           T                                                     T                                                  ",
+    "   T                                                                                         T                    T                         ",
+    "   T                                     T                    T                                                                             ",
+    "    T         T          T                                             T  T          T          T                                        T  ",
+    "           T                         T   T         T            T            T      T      T  T                                             ",
+    "                                T  T                                  T      T                        T                                     ",
+    "                                                 T  T                      T                T       T               T                     T ",
+    "                                                                             T    TT                T       T            T           T      ",
+    "             T                                      T                                                                                  T    ",
+    "                                                     T T                                                                                T   ",
+    "                             T                     T          T    T      T                       TT                                        ",
+    "                                           T           T                                         T    T                                     ",
+    "                                             T       TT      T                                   T                                          ",
+    "                                                                                                                                            "
+   ],
+   "legend": {
+    "T": {
+     "char": "♣",
+     "color": "#2f9a4a",
+     "solid": true
+    }
+   },
+   "x": 0,
+   "y": 0
+  },
+  {
+   "name": "House",
+   "rows": [
+    "##############",
+    "#            #",
+    "#            #",
+    "#            #",
+    "#            #",
+    "#####    #####"
+   ],
+   "legend": {
+    "#": {
+     "char": "█",
+     "color": "#9a6a48",
+     "solid": true
+    }
+   },
+   "x": 105,
+   "y": 12
+  }
+ ],
+ "entities": [
+  {
+   "id": 9,
+   "name": "hero",
+   "x": 20,
+   "y": 30,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "reflect": true,
+   "behaviours": [
+    {
+     "name": "TopDownMove",
+     "params": {
+      "speed": 14
+     }
+    },
+    {
+     "name": "CameraFollow",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "name": "Mira",
+   "x": 30,
+   "y": 26,
+   "z": 0,
+   "tags": [
+    "npc"
+   ],
+   "sprite": {
+    "asset": "npc"
+   },
+   "behaviours": [
+    {
+     "name": "Wander",
+     "params": {
+      "speed": 3
+     }
+    },
+    {
+     "name": "SayOnClick",
+     "params": {
+      "text": "Welcome! Click things, collect coins, and peek into the house."
+     }
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "name": "house door",
+   "x": 109,
+   "y": 16,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "door"
+   },
+   "trigger": true,
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "house",
+      "transition": "fade"
+     }
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "name": "house label",
+   "x": 109,
+   "y": 10,
+   "z": 20,
+   "tags": [],
+   "sprite": "HOUSE",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#c09050"
+   }
+  },
+  {
+   "id": 1,
+   "name": "coin1",
+   "x": 24,
+   "y": 31,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "coin2",
+   "x": 34,
+   "y": 36,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "name": "coin3",
+   "x": 48,
+   "y": 22,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "name": "coin4",
+   "x": 92,
+   "y": 45,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "name": "coin5",
+   "x": 60,
+   "y": 50,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "name": "coin6",
+   "x": 110,
+   "y": 36,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "name": "coin7",
+   "x": 20,
+   "y": 14,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "name": "coin8",
+   "x": 84,
+   "y": 14,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.6,
+      "speed": 3
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {
+      "value": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Coins 0",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   },
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Coins"
+     }
+    }
+   ]
+  }
+ ]
+}

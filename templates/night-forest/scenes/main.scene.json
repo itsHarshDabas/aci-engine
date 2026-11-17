@@ -1,0 +1,648 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "main",
+ "world": {
+  "cols": 180,
+  "rows": 70
+ },
+ "environment": {
+  "preset": "grass",
+  "params": {
+   "grass": "#1f6b3d",
+   "dark": "#06160d",
+   "flowers": false,
+   "wind": 1.2
+  }
+ },
+ "gravity": 0,
+ "camera": {
+  "follow": "hero"
+ },
+ "tilemaps": [
+  {
+   "name": "Trees",
+   "rows": [
+    "                                                                                                                                                                                    ",
+    "      T      T                       T     TT     T   T              T T             T T                      T                     T            TT                                 ",
+    "                                                  T  T T   T T                           T    T   T                                T    T  TT        T                          T   ",
+    "                                 T      TTT        T         T         T              T                    T                                   TT     T            T                ",
+    "                                        T   T  T             T  TTT                        T               T        T                  T                                 T          ",
+    "    T                   T              T T    T           T                  T                T   T     T               T                                                           ",
+    "                                                                         T                      T  T T        T                                                       T     T       ",
+    "                                        TT                                                                              TT                                            T    T        ",
+    "                                                           T                                     T               T       T                T                         T               ",
+    "                                         T          T      TT                                                          TT                                                       T   ",
+    "                      T                T   T     T T    T T         T                   T                                                                                           ",
+    "                                T T   T         T                    T                         T                    T                                                               ",
+    "        T T          T                      T     T    T                                    T      T                T                                      T                        ",
+    "  T                T                 TT                    T T T                                T  T              T                               T                                 ",
+    "            T      T TT T             T    T        T             T              T                T     T                                T                           T  T           ",
+    "  T        T       T                TTT        T         T                    T       T   T   T     T TT                                                                      T     ",
+    "                    T T  T              TTTT  TT   T  TT   T               T                                                                   T      T                             ",
+    "  T            T    T        T        TT   T                               T TT                       T                                                                             ",
+    "                                   T                                  T    T        T    T                           T                                 T   T            T           ",
+    "                                                        T                        T            T                                                                                     ",
+    " T  T                                      T  T                                  TT                          TT  T                             T T                TT     T        T ",
+    "          T     T                                                                  T                               T          T                       T  T             T     T  T   ",
+    "      T         T                                                            T  T                                                T           T              T      T      TT   T    ",
+    "                                          T                                                T       T                      T        T                                                ",
+    "         T                        T                                    T         T                     TT          T                                      T TT               T  TT  ",
+    "   T                                 T                                                                                           T                     T          T T         T     ",
+    "          T                       T                                  T                              T                                  T                          T                 ",
+    "          T                                                                                         T                                                                               ",
+    "                         T   T                   T               T    T                                      T T                                        T                           ",
+    "   T                 T  T  T                          T                T                          T    T                         T                                                  ",
+    "                        T T                                 T          TT                                             T      T    T                                                 ",
+    "         T              T    T                                  T               T                     T         T          T                                                        ",
+    "              T           T                                            T    T                                                          T                               T            ",
+    "   T        T  T T                                                                               T                       T           T                                      T  TT   ",
+    "              T  T    T TT T                          T                      T T                    TTT                                                   T                    T    ",
+    "         T  T T T    T    T                                                          T            TT                                T                                      T        ",
+    "                           T                                                                                                  TT                                            T       ",
+    "                         T                                     T                            T   TT T T                                                                           T  ",
+    "                    T                                          T              T                  T                                                           T              T       ",
+    "   T   T T         T  T                                                                                                   T T                                                       ",
+    "   TT                                                         T                                              T                                      T                               ",
+    "                              T                                                                              T                                           T        T         T       ",
+    "                           T     TT    T T                        T          T                  T          T                  T                T                                    ",
+    "             T            TT       T  T T              T                                                                                                        T               T   ",
+    "                             T   T     T   T  T T            T                                 T                       T                      T                                  T  ",
+    "     T               T         T   T  T   T        T                                            T                                                                                   ",
+    "                                   T                  T                       T    T       T                   T    TT                                          T                   ",
+    "                               T                       T T                   T                             T         T  T                                   T                       ",
+    "               T                     T T        T    T      T                                                      T        T                         T      T    T           T     ",
+    "                                                               T  TT  T       T      T T            T  T                                    T             TT   T        T         T ",
+    "                                                          T          T    T           T  T                T T                              T T          TT T  T T        T TT       ",
+    "                                                                    T T                                     T   T                       T    T      T           T    T          T   ",
+    "                                                                T   T                                                                                   TT       T   TT     T T     ",
+    "                                                                    T                             T       T                                                                  TT     ",
+    "               T                  T   T T     T                                                                             T      T        T                  T T                  ",
+    "            T  T                               T                                                T  T   T                    T                  T                              T     ",
+    "          T         T    TT            T         T                                       T                              T        T                         T                  T     ",
+    "                      TT                  T                                  T                                     T            T                                                   ",
+    "          T                                T                                 T       T          T T             T                                 T                                 ",
+    "          T   T                                                                           T                                    T                                   T         T      ",
+    "  T                                                                                                                                          T                              T   T   ",
+    "          T  T                                                      T                       T              TT                                          T      T                     ",
+    "       T    T  T           T       T T                         T         T                      T     T     T                                                    T                  ",
+    "           T       T               T            TT                                                               T                                       T                    T     ",
+    "                                       T     T                                                 T                 T                             T   T        T                       ",
+    "                                                                                     T                      T                               T T  T                                  ",
+    " T                             T                                                                                                                   T                 T              ",
+    "            T                                                                                                   T  T                                TT                              ",
+    "  T T T                T        T                             T                                                   T                                 T             T       T         ",
+    "                                                                                                                                                                                    "
+   ],
+   "legend": {
+    "T": {
+     "char": "♣",
+     "color": "#2f9a4a",
+     "solid": true
+    }
+   },
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "entities": [
+  {
+   "id": 18,
+   "name": "hero",
+   "x": 44,
+   "y": 37,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "reflect": true,
+   "behaviours": [
+    {
+     "name": "TopDownMove",
+     "params": {
+      "speed": 15
+     }
+    },
+    {
+     "name": "CameraFollow",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "name": "campfire",
+   "x": 40,
+   "y": 35,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "campfire"
+   },
+   "reflect": false
+  },
+  {
+   "id": 1,
+   "name": "firefly1",
+   "x": 117,
+   "y": 5,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "firefly2",
+   "x": 94,
+   "y": 39,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "name": "firefly3",
+   "x": 98,
+   "y": 22,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "name": "firefly4",
+   "x": 62,
+   "y": 51,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "name": "firefly5",
+   "x": 169,
+   "y": 37,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "name": "firefly6",
+   "x": 61,
+   "y": 30,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "name": "firefly7",
+   "x": 12,
+   "y": 54,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "name": "firefly8",
+   "x": 133,
+   "y": 44,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "name": "firefly9",
+   "x": 97,
+   "y": 57,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "name": "firefly10",
+   "x": 140,
+   "y": 23,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "name": "firefly11",
+   "x": 123,
+   "y": 7,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "name": "firefly12",
+   "x": 14,
+   "y": 10,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "name": "firefly13",
+   "x": 144,
+   "y": 44,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "name": "firefly14",
+   "x": 153,
+   "y": 29,
+   "z": 0,
+   "tags": [
+    "firefly"
+   ],
+   "sprite": {
+    "asset": "firefly"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 1.2,
+      "speed": 2
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "name": "wisp1",
+   "x": 100,
+   "y": 20,
+   "z": 3,
+   "tags": [
+    "enemy"
+   ],
+   "sprite": {
+    "asset": "wisp"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Follow",
+     "params": {
+      "target": "player",
+      "speed": 5,
+      "stopDistance": 0
+     }
+    },
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "name": "wisp2",
+   "x": 130,
+   "y": 50,
+   "z": 3,
+   "tags": [
+    "enemy"
+   ],
+   "sprite": {
+    "asset": "wisp"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Follow",
+     "params": {
+      "target": "player",
+      "speed": 5,
+      "stopDistance": 0
+     }
+    },
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "name": "wisp3",
+   "x": 70,
+   "y": 58,
+   "z": 3,
+   "tags": [
+    "enemy"
+   ],
+   "sprite": {
+    "asset": "wisp"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Follow",
+     "params": {
+      "target": "player",
+      "speed": 5,
+      "stopDistance": 0
+     }
+    },
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "name": "help",
+   "x": 28,
+   "y": 31,
+   "z": 20,
+   "tags": [],
+   "sprite": "Catch 12 fireflies. Wisps send you back to camp.",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#7a8bb0"
+   }
+  },
+  {
+   "id": 21,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Coins 0",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   },
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Fireflies",
+      "reset": true,
+      "goal": 12,
+      "goalScene": "win"
+     }
+    }
+   ]
+  }
+ ]
+}

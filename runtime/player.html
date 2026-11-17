@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI Player</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0e1a;overflow:hidden}
+  #screen{position:fixed;inset:0}
+  #msg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#8490ae;font:14px ui-monospace,Menlo,Consolas,monospace;text-align:center;padding:24px}
+</style>
+<!-- Engine files are loaded by absolute URL so the same page works at /runtime/player.html and /play/<id>/ -->
+<script src="/aci.js"></script>
+<script src="/modules/anim.js"></script>
+<script src="/modules/physics.js"></script>
+<script src="/modules/tilemap.js"></script>
+<script src="/modules/scenes.js"></script>
+<script src="/modules/input.js"></script>
+<script src="/modules/sound.js"></script>
+<script src="/modules/save.js"></script>
+<script src="/modules/cutscene.js"></script>
+<script src="/modules/hud.js"></script>
+<script src="/modules/project.js"></script>
+<script src="/modules/environments.js"></script>
+<script src="/runtime/behaviours.js"></script>
+<script src="/runtime/runtime.js"></script>
+</head><body>
+<div id="screen"></div><div id="msg"></div>
+<script>
+(function () {
+  'use strict';
+  const inFrame = window.parent !== window;
+  const post = m => { try { window.parent.postMessage(m, '*'); } catch (e) {} };
+  const msg = t => { const el = document.getElementById('msg'); el.textContent = t; el.style.display = t ? 'flex' : 'none'; };
+  const onLog = (level, text) => post({ type: 'aci-log', level, msg: text });
+  const onScene = name => post({ type: 'aci-scene-changed', scene: name });
+  const fail = e => { msg('Could not start: ' + e.message); onLog('error', e.message); };
+  let started = false;
+
+  function boot(data) {
+    if (started) return; started = true; msg('');
+    try {
+      const game = ACIRuntime.start(data, { target: '#screen', onLog, onScene });
+      if (!inFrame && location.protocol !== 'file:' && game.connect) { try { game.connect(undefined, { name: (data.manifest && data.manifest.name) || 'game' }); } catch (e) {} }
+    } catch (e) { started = false; fail(e); }
+  }
+
+  // 1) editor play mode: unsaved changes arrive by postMessage
+  window.addEventListener('message', ev => {
+    const m = ev.data;
+    if (!m || m.type !== 'aci-play') return;
+    boot({ manifest: m.manifest, startScene: m.scene, scenes: m.scenes || (m.scene && m.sceneDoc ? { [m.scene]: m.sceneDoc } : {}), assets: m.assets || {}, scripts: m.scripts || {}, cutscenes: m.cutscenes || {} });
+  });
+
+  // 2) from the server: /play/<id>/ or player.html?project=<id>[&scene=<name>]
+  async function fromApi(id, sceneName) {
+    const j = async url => { const r = await fetch(url); if (!r.ok) throw new Error(url + ' -> ' + r.status); return r; };
+    const base = '/api/projects/' + encodeURIComponent(id);
+    const manifest = await (await j(base)).json();
+    const tree = await (await j(base + '/tree')).json();
+    const files = tree.filter(f => f.type === 'file');
+    const read = async (p, json) => { const r = await j(base + '/file/' + p.split('/').map(encodeURIComponent).join('/')); return json ? r.json() : r.text(); };
+    const data = { manifest, startScene: sceneName || manifest.startScene, scenes: {}, assets: {}, scripts: {}, cutscenes: {} };
+    await Promise.all(files.map(async f => {
+      let m;
+      if ((m = f.path.match(/^scenes\/(.+)\.scene\.json$/))) data.scenes[m[1]] = await read(f.path, true);
+      else if ((m = f.path.match(/^assets\/(.+)\.aci\.json$/))) data.assets[m[1]] = await read(f.path, true);
+      else if ((m = f.path.match(/^cutscenes\/(.+)\.cutscene\.json$/))) data.cutscenes[m[1]] = await read(f.path, true);
+      else if ((m = f.path.match(/^scripts\/(.+)\.js$/))) data.scripts[m[1]] = await read(f.path, false);
+    }));
+    // scene names come from the manifest (file name may differ)
+    (manifest.scenes || []).forEach(s => { const stem = (s.file || '').replace(/^scenes\//, '').replace(/\.scene\.json$/, ''); if (stem !== s.name && data.scenes[stem]) { data.scenes[s.name] = data.scenes[stem]; delete data.scenes[stem]; } });
+    boot(data);
+  }
+
+  // 3) exported build: data inlined as window.__ACI_PROJECT__ (runtime.js is bundled by the builder)
+  window.addEventListener('DOMContentLoaded', () => {
+    const q = new URLSearchParams(location.search);
+    const id = window.__ACI_PROJECT_ID__ || q.get('project');
+    if (window.__ACI_PROJECT__) boot(window.__ACI_PROJECT__);
+    else if (id) fromApi(id, q.get('scene')).catch(fail);
+    else if (!inFrame) msg('No project. Open /play/<project>/ or ?project=<id>.');
+    if (inFrame) post({ type: 'aci-ready' });
+  });
+})();
+</script></body></html>

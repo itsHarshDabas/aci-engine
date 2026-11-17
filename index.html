@@ -1,0 +1,414 @@
+<title>ACI Renderer Engine</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-bleed scrolling world on top, three tool panels underneath (ask Claude, image converter, raw agent console). Single dark look on purpose: it is a game screen. */
+:root {
+  --night: #070a14; --panel: #0d1222; --line: #1d2640; --ink: #d8def0; --muted: #8490ae;
+  --moon: #e8c870; --water: #5d7fc4; --leaf: #7cc96d; --warn: #e07a6a;
+  --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { background: var(--night); color: var(--ink); }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 32px; max-width: 1400px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+h1 { font: 700 18px var(--mono); margin: 0; letter-spacing: .02em; }
+h1 span { color: var(--moon); } h1 small { color: var(--muted); font-weight: 400; font-size: 14px; }
+.sub { color: var(--muted); font-size: 13px; margin: 0; }
+.sub a, p a { color: var(--moon); }
+#stage { height: clamp(300px, 64vh, 720px); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #0a0e1a; display: grid; place-items: center; touch-action: none; }
+.panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 980px) { .panels { grid-template-columns: 1fr; } }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+h2 { font: 700 13px var(--mono); text-transform: uppercase; letter-spacing: .08em; margin: 0; display: flex; gap: 8px; align-items: center; }
+h2 i { font-style: normal; color: var(--moon); }
+section p { margin: 0; color: var(--muted); font-size: 13px; }
+textarea, pre { font: 12px var(--mono); background: var(--night); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 8px; width: 100%; }
+textarea { resize: vertical; min-height: 70px; line-height: 1.3; }
+pre { margin: 0; overflow: auto; line-height: 1.05; max-height: 190px; white-space: pre; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+label { font-size: 12px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+select, input[type=range] { accent-color: var(--moon); }
+select { background: var(--night); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; font: 12px var(--mono); }
+button, a.btn { font: 600 12px var(--mono); color: var(--night); background: var(--moon); border: 0; border-radius: 4px; padding: 7px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+button.ghost, a.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+button:hover, a.btn:hover { filter: brightness(1.1); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--water); outline-offset: 1px; }
+.log { font-size: 11px; max-height: 190px; min-height: 80px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; }
+.log .a { color: var(--moon); } .log .ok { color: var(--leaf); } .log .err { color: var(--warn); } .log .say { color: var(--ink); }
+.file { position: relative; overflow: hidden; display: inline-block; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { font: 11px var(--mono); padding: 4px 8px; background: transparent; color: var(--ink); border: 1px solid var(--line); }
+details summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--moon); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><span>ACI</span> Renderer Engine <small>v0.2</small></h1>
+    <p class="sub">Walk with WASD or the arrows, or click where you want to go. The world scrolls; the map is top right. <a href="https://claude.ai/artifact/RFDQr32JBWB11L85rgKf2Q" id="editorLink" target="_blank" rel="noopener">Asset editor</a> · <a href="examples/index.html">Examples</a></p>
+  </header>
+
+  <div id="stage" aria-label="Animated ASCII world"></div>
+
+  <div class="panels">
+    <section aria-labelledby="h-ai">
+      <h2 id="h-ai"><i>01</i> Ask Claude to build</h2>
+      <p>Claude sees the screen as text and builds with the same JSON commands any agent uses.</p>
+      <div class="chips" id="ideas">
+        <button>Plant a small orchard of fruit trees near me</button>
+        <button>Add a fishing dock on the pond and a fisherman with a speech bubble</button>
+        <button>Make a campfire that flickers and two travellers around it</button>
+      </div>
+      <textarea id="aiAsk" spellcheck="false" aria-label="What should Claude build?">Build a little stone well next to me and have Mochi say something about it</textarea>
+      <div class="row"><button id="aiGo">Ask Claude</button><button class="ghost" id="aiStop" hidden>Stop</button><button class="ghost" id="aiUndo">Remove Claude's builds</button></div>
+      <pre class="log" id="aiLog" aria-live="polite"></pre>
+      <p id="aiOff" hidden>Asking Claude works when this page is open on claude.ai. Locally, connect agents through the bridge (panel 03).</p>
+    </section>
+
+    <section aria-labelledby="h-img">
+      <h2 id="h-img"><i>02</i> Convert an image</h2>
+      <p>Pick a picture (a PNG with transparency works best). Showing a built-in sample until you do.</p>
+      <div class="row">
+        <span class="file"><button class="ghost" type="button">Choose image…</button><input type="file" id="imgFile" accept="image/*" aria-label="Choose image"></span>
+        <label>Width <input type="range" id="imgCols" min="12" max="70" value="28"> <span id="imgColsV">28</span></label>
+        <label>Style <select id="imgRamp"><option value="standard">standard</option><option value="detailed">detailed</option><option value="blocks">blocks</option><option value="grass">grass</option></select></label>
+      </div>
+      <pre id="imgPreview" aria-label="ASCII preview"></pre>
+      <div class="row"><button id="imgPlace">Place next to me</button></div>
+    </section>
+
+    <section aria-labelledby="h-agent">
+      <h2 id="h-agent"><i>03</i> Agent console</h2>
+      <p>Every agent, human or AI, sends plain JSON. Each command names its agent, so several can build in one world. Type <code>{"op":"help"}</code> for the full list.</p>
+      <div class="row"><button id="runAgents">Run sample agents</button><button class="ghost" id="describe">describe world</button></div>
+      <textarea id="cmd" spellcheck="false" aria-label="JSON command" style="min-height:90px"></textarea>
+      <div class="row"><button id="send">Send command</button><span id="bridgeState" class="sub"></span></div>
+      <pre class="log" id="log" aria-live="polite"></pre>
+      <details><summary>Connect your own agents (Claude Code, scripts)</summary>
+        <p style="margin-top:8px">Run <code>node bridge/server.mjs</code> in the engine folder and open <code>http://localhost:7777</code>. Then any agent can <code>POST /api/command</code>, or add Claude with <code>claude mcp add aci -- node bridge/mcp.mjs --agent=builder</code>.</p>
+      </details>
+    </section>
+  </div>
+</div>
+
+<script src="aci.js"></script>
+<script src="modules/physics.js"></script>
+<script src="modules/tilemap.js"></script>
+<script src="modules/scenes.js"></script>
+<script src="modules/input.js"></script>
+<script src="modules/sound.js"></script>
+<script src="modules/save.js"></script>
+<script src="modules/anim.js"></script>
+<script src="modules/convert.js"></script>
+<script>
+(async function () {
+  try { await document.fonts.load('12px "JetBrains Mono"'); } catch (e) {}
+  const R = String.raw, { mix, fbm, hash } = ACI;
+  const WORLD = { cols: 300, rows: 110 };
+  const game = ACI.game('#stage', { fontSize: innerWidth < 600 ? 10 : 12, background: '#0a0e1a', world: WORLD });
+  window.game = game;
+  window.addEventListener('resize', () => game.setFontSize(innerWidth < 600 ? 10 : 12));
+
+  // ------------------------------------------------------------ world shape: ponds, rocks, a path
+  const ponds = [
+    { cx: 70, cy: 62, rx: 34, ry: 15 },
+    { cx: 190, cy: 30, rx: 26, ry: 11 },
+    { cx: 235, cy: 82, rx: 40, ry: 16 },
+  ];
+  const isWater = (x, y) => ponds.some(p => { const nx = (x - p.cx) / p.rx, ny = (y - p.cy) / p.ry; return nx * nx + ny * ny + (fbm(x * 0.07, y * 0.16, 3) - 0.5) * 0.7 < 1; });
+  const isBorder = (x, y) => x < 2 || y < 1 || x > WORLD.cols - 3 || y > WORLD.rows - 2;
+  const isRock = (x, y) => isBorder(x, y) || (!isWater(x, y) && fbm(x * 0.09, y * 0.17, 11) > 0.77);
+  const pathY = x => 40 + Math.sin(x * 0.03) * 12 + Math.sin(x * 0.011) * 10;
+  const isPath = (x, y) => !isWater(x, y) && Math.abs(y - pathY(x)) < 1.6 + fbm(x * 0.2, y * 0.2, 8);
+  game.mask('water', isWater).mask('rock', (x, y) => isRock(x, y) && !isPath(x, y)).mask('path', isPath);
+  game.reflect('water', { tint: '#14214a', amount: 0.5 });
+  const field = new Float32Array(WORLD.cols * WORLD.rows), shore = new Uint8Array(WORLD.cols * WORLD.rows);
+  for (let y = 0; y < WORLD.rows; y++) for (let x = 0; x < WORLD.cols; x++) {
+    const i = y * WORLD.cols + x; field[i] = fbm(x * 0.05, y * 0.09, 1);
+    if (game.is('water', x, y)) shore[i] = !game.is('water', x, y - 1) || !game.is('water', x - 1, y) || !game.is('water', x + 1, y) || !game.is('water', x, y + 1) ? 1 : 0;
+  }
+
+  // ------------------------------------------------------------ background shader (world coords)
+  const ROCK = '#$&@%8BQ0O';
+  game.layer((x, y, t) => {
+    const i = y * WORLD.cols + x, h = hash(x, y);
+    if (game.is('water', x, y)) {
+      const bgc = '#0b1128';
+      if (shore[i]) return [h < 0.5 ? '.' : '~', mix('#3a5288', '#9cb6e8', 0.5 + 0.5 * Math.sin(t * 2 + x * 0.6)), bgc];
+      const wave = Math.sin(x * 0.33 - t * 1.1 + Math.sin(y * 1.3 + t * 0.4) * 2.2);
+      if (hash(x, y, Math.floor(t * 2 + h * 9)) < 0.0035) return ['*', '#dfe8ff', bgc];
+      return [wave > 0.82 ? '=' : wave > 0.15 ? '-' : (h < 0.12 ? '.' : ' '), mix('#16213f', '#4a68aa', (wave + 1) / 2 * 0.8 + h * 0.2), bgc];
+    }
+    if (game.is('rock', x, y)) return [ROCK[Math.floor(h * ROCK.length)], mix('#4b5468', '#cfd5e2', fbm(x * 0.3, y * 0.5, 9) * 0.9 + h * 0.15), '#0c101d'];
+    if (game.is('path', x, y)) return [h < 0.35 ? '.' : h < 0.5 ? ':' : h < 0.56 ? 'o' : ' ', mix('#5a4a36', '#b09a72', h), '#15110c'];
+    const g = field[i];
+    const wind = Math.sin(x * 0.11 + y * 0.05 - t * 1.7) + 0.55 * Math.sin(x * 0.043 - t * 0.6) + (h - 0.5) * 0.9;
+    if (g < 0.32 && h < 0.55) return [h < 0.2 ? ',' : '.', mix('#1c3a24', '#3b6b3a', g), '#0a130f'];
+    if (hash(x, y, Math.floor(t * 0.9 + h * 7)) < 0.0018) return ['.', '#f2ffd8', '#0a130f'];
+    const c = wind > 0.6 ? '/' : wind < -0.6 ? '\\' : (hash(x, y, 2) < 0.25 ? "'" : '|');
+    return [c, mix('#174d24', '#78d468', g * 0.8 + h * 0.25 + (wind > 0.9 ? 0.2 : 0)), '#0a130f'];
+  }, -10);
+
+  // ------------------------------------------------------------ assets made by hand
+  const M = R`
+ hhh
+ fff
+cbbbc
+ ccc
+ l l`;
+  const hero = ACI.sprite({
+    idle: [R`
+ ,^,
+ (o)
+/[#]\
+ /_\
+ | |`, R`
+ ,^,
+ (-)
+/[#]\
+ /_\
+ | |`],
+    walk: [R`
+ ,^,
+ (o)
+/[#]\
+ /_\
+ / |`, R`
+ ,^,
+ (o)
+\[#]/
+ /_\
+ | \ `],
+  }, { fps: 6, palette: { h: '#e8c870', f: '#f2d7b6', c: '#d45a4f', b: '#f0e6d0', l: '#8a7a68' }, colors: { idle: [M], walk: [M] } });
+  const tree = ACI.sprite([R`
+    &&&&
+  &&%&&%&&
+ &%&&&&%&&&
+  &&&%&&&%
+    \||/
+     ||`, R`
+   &&&&
+  &&%&&%&&
+ &%&&&&%&&&
+  &&&%&&&%
+    \||/
+     ||`], { fps: 1.3, palette: { l: '#a8e07a', d: '#5fae5a', t: '#b07a4c' }, colors: [R`
+    dlld
+  dlldlldl
+ ldlldlldll
+  lldlldll
+    tttt
+     tt`] });
+  const pine = ACI.sprite(R`
+   ^
+  /^\
+ /^^^\
+/^^^^^\
+  |#|`, { palette: { g: '#4fae6a', t: '#8a5a3a' }, colors: R`
+   g
+  ggg
+ ggggg
+ggggggg
+  ttt` });
+  const cat = ACI.sprite({ default: [R`
+/\_/\
+(o.o)
+ > <~`, R`
+/\_/\
+(-.-)
+ > <~`] }, { color: '#e89a52', fps: 2 });
+  game.assets.tree = tree; game.assets.pine = pine; game.assets.wanderer = hero; game.assets.cat = cat;
+
+  const blocked = (x, y, e) => {
+    if (x < 0 || y < 0 || x + e.w > game.cols || y + e.h > game.rows) return true;
+    const fy = Math.round(y + e.h - 1);
+    for (let i = 0; i < e.w; i++) if (game.is('water', x + i, fy) || game.is('rock', x + i, fy)) return true;
+    return false;
+  };
+  game.blocked = blocked;
+  const shoreTop = (x, from = 0) => { for (let y = from; y < game.rows; y++) if (game.is('water', x, y)) return y; return game.rows; };
+  const free = (x, y, w, h) => !blocked(x, y, { w, h });
+
+  // trees along pond shores and scattered pines
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  ponds.forEach((p, k) => {
+    for (let n = 0; n < 3; n++) {
+      const tx = Math.round(p.cx - p.rx * 0.7 + n * p.rx * 0.6 + rnd() * 6), ty = shoreTop(tx + 5, Math.round(p.cy - p.ry - 6)) - tree.h;
+      if (free(tx, ty, tree.w, tree.h)) game.add(tree, { name: `tree-${k}-${n}`, x: tx, y: ty, reflect: true });
+    }
+  });
+  for (let n = 0; n < 45; n++) {
+    const x = Math.round(rnd() * (game.cols - 10)), y = Math.round(rnd() * (game.rows - 8));
+    if (free(x, y, 7, 5) && !game.is('path', x + 3, y + 4) && !isWater(x + 3, y + 7)) game.add(pine, { name: 'pine-' + n, x, y });
+  }
+
+  const start = { x: Math.round(ponds[0].cx - 2), y: 0 }; start.y = shoreTop(start.x + 2, 30) - hero.h;
+  const player = game.add(hero, { name: 'you', label: 'you', reflect: true, z: 2, anim: 'idle', x: start.x, y: start.y });
+  while (blocked(player.x, player.y, player) && player.y > 2) player.y--;
+  const mochi = game.add(cat, { name: 'mochi', label: 'Mochi', labelColor: '#f5c9a0', reflect: true, z: 1, x: player.x + 12, y: player.y + 1 });
+  while (blocked(mochi.x, mochi.y, mochi) && mochi.y > 2) mochi.y--;
+  mochi.update = game.wanderer(6); mochi.wandering = true;
+  mochi.update = ((w) => (dt, e) => { if (Math.hypot(e.x - player.x, e.y - player.y) > 30) { e.target = { x: player.x + 8, y: player.y }; } w(dt, e, game); })(mochi.update);
+  game.follow(player, { lerp: 0.15 });
+
+  // player: keys or click-to-walk
+  let walkTo = null;
+  game.on('click', p => { if (p.sy < 1) return; walkTo = { x: p.x - 2, y: p.y - player.h + 1 }; });
+  game.onUpdate(dt => {
+    let dx = 0, dy = 0;
+    if (game.key('ArrowLeft', 'a')) dx -= 1; if (game.key('ArrowRight', 'd')) dx += 1;
+    if (game.key('ArrowUp', 'w')) dy -= 1; if (game.key('ArrowDown', 's')) dy += 1;
+    if (dx || dy) walkTo = null;
+    else if (walkTo) { const ex = walkTo.x - player.x, ey = walkTo.y - player.y; if (Math.hypot(ex, ey) < 0.6) walkTo = null; else { dx = Math.abs(ex) > 0.4 ? Math.sign(ex) : 0; dy = Math.abs(ey) > 0.4 ? Math.sign(ey) : 0; } }
+    const nx = player.x + dx * 16 * dt, ny = player.y + dy * 9 * dt;
+    if (!blocked(nx, player.y, player)) player.x = nx; else if (walkTo) walkTo = null;
+    if (!blocked(player.x, ny, player)) player.y = ny; else if (walkTo && !dx) walkTo = null;
+    if (dx) player.flipX = dx < 0;
+    player.play(dx || dy ? 'walk' : 'idle');
+  });
+
+  // HUD + minimap (screen coords)
+  const MM = { w: 30, h: 11 };
+  game.onDraw(g => {
+    g.screen.text(0, 0, ` ACI v${ACI.version} · world ${g.cols}x${g.rows} · ${g.fps} fps · ${g.entities.length} entities `.padEnd(Math.min(g.viewCols, 64)), '#c8d0e6', '#0a0e1a');
+    if (g.viewCols < 60) return;
+    const ox = g.viewCols - MM.w - 2, oy = 1;
+    g.screen.box(ox - 1, oy, MM.w + 2, MM.h + 2, '#3a4560', '#070a14');
+    for (let j = 0; j < MM.h; j++) for (let i = 0; i < MM.w; i++) {
+      const wx = Math.floor((i + 0.5) * g.cols / MM.w), wy = Math.floor((j + 0.5) * g.rows / MM.h);
+      const c = g.is('water', wx, wy) ? ['~', '#4a68aa'] : g.is('rock', wx, wy) ? ['#', '#6b7488'] : g.is('path', wx, wy) ? [':', '#9a8462'] : ['.', '#2f6a35'];
+      g.screen.put(ox + i, oy + 1 + j, c[0], c[1], '#070a14');
+    }
+    const vx = Math.floor(g.camera.x * MM.w / g.cols), vy = Math.floor(g.camera.y * MM.h / g.rows), vw = Math.max(1, Math.round(g.viewCols * MM.w / g.cols)), vh = Math.max(1, Math.round(g.viewRows * MM.h / g.rows));
+    for (let i = 0; i < vw; i++) { g.screen.put(ox + vx + i, oy + 1 + vy, null, '#e8c870'); g.screen.put(ox + vx + i, oy + vy + vh, null, '#e8c870'); }
+    g.entities.forEach(e => { if (e.owner) g.screen.put(ox + Math.floor(e.x * MM.w / g.cols), oy + 1 + Math.floor(e.y * MM.h / g.rows), '+', '#c77dd8'); });
+    g.screen.put(ox + Math.floor(player.x * MM.w / g.cols), oy + 1 + Math.floor(player.y * MM.h / g.rows), '@', '#ffffff');
+  });
+
+  // ------------------------------------------------------------ shared log
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const logEl = document.getElementById('log');
+  const addLog = (el, html) => { el.innerHTML = html + '\n' + el.innerHTML; };
+  game.on('command', ({ cmd, result }) => {
+    if (cmd.op === 'look' || cmd.op === 'help') return;
+    addLog(logEl, `<span class="a">[${esc(cmd.agent || 'anon')}]</span> ${esc(cmd.op)}${cmd.name ? ' ' + esc(cmd.name) : ''} → <span class="${result.ok ? 'ok' : 'err'}">${esc(JSON.stringify(result).slice(0, 160))}</span>`);
+  });
+  const near = (dx = 8) => ({ x: Math.round(player.x + dx), y: Math.round(player.y) });
+  // nearest spot on grass (not water, rock or another entity) around a wanted position
+  const overlaps = (x, y, w, h) => game.entities.some(e => !e.hidden && x < e.x + e.w && x + w > e.x && y < e.y + e.h && y + h > e.y);
+  function freeNear(x, y, w, h) {
+    for (let r = 0; r < 40; r++) for (let k = 0; k < Math.max(1, r * 8); k++) {
+      const a = k / Math.max(1, r * 8) * Math.PI * 2, cx = Math.round(x + Math.cos(a) * r * 1.6), cy = Math.round(y + Math.sin(a) * r * 0.8);
+      let ok = cx > 1 && cy > 1 && cx + w < game.cols - 1 && cy + h < game.rows - 1 && !overlaps(cx - 1, cy, w + 2, h);
+      for (let j = 0; ok && j < h; j++) for (let i = 0; ok && i < w; i++) if (game.is('water', cx + i, cy + j) || game.is('rock', cx + i, cy + j)) ok = false;
+      if (ok) return { x: cx, y: cy };
+    }
+    return { x: Math.round(x), y: Math.round(y) };
+  }
+
+  // ------------------------------------------------------------ panel 3: console + scripted agents + bridge
+  const cmdBox = document.getElementById('cmd');
+  cmdBox.value = JSON.stringify({ agent: 'builder-1', op: 'spawn', name: 'lantern', art: ' _\n[*]\n |', color: '#ffd27a', ...near(-6) }, null, 1);
+  document.getElementById('send').onclick = () => {
+    try { const r = game.command(JSON.parse(cmdBox.value)); if (r && r.commands) addLog(logEl, esc(Object.entries(r.commands).map(([k, v]) => k + ': ' + v).join('\n'))); }
+    catch (e) { addLog(logEl, `<span class="err">That isn't valid JSON: ${esc(e.message)}</span>`); }
+  };
+  document.getElementById('describe').onclick = () => {
+    const r = game.command({ agent: 'you', op: 'describe' });
+    addLog(logEl, `<span class="ok">${esc(JSON.stringify({ world: r.world, view: r.view, entities: r.entities.length, masks: r.masks, assets: r.assets }))}</span>`);
+  };
+  document.getElementById('runAgents').onclick = () => {
+    const p = near(0);
+    const frogAt = freeNear(p.x - 14, p.y + 1, 8, 4), signAt = freeNear(p.x + 8, p.y - 6, 9, 4), signTo = freeNear(p.x - 22, p.y - 5, 9, 4), flyAt = freeNear(p.x + 2, p.y - 3, 1, 1);
+    const script = [
+      [0, { agent: 'artist', op: 'asset', name: 'frog', asset: { aci: 1, palette: { e: '#ffffff', g: '#7ad06a' }, anims: { default: [{ text: [' @..@', '(----)', '( >__< )', '^^ ~~ ^^'], colors: [' eggge', 'gggggg', 'gggggggg', 'gg gg gg'] }] } } }],
+      [500, { agent: 'director', op: 'spawn', name: 'frog', asset: 'frog', ...frogAt }],
+      [1000, { agent: 'artist', op: 'spawn', name: 'sign', art: ' _______\n|  ACI  |\n|_______|\n   ||', color: '#c9a36a', ...signAt }],
+      [1500, { agent: 'director', op: 'say', name: 'mochi', text: 'a frog appeared!' }],
+      [2300, { agent: 'director', op: 'say', name: 'frog', text: 'ribbit', secs: 2 }],
+      [2700, { agent: 'artist', op: 'spawn', name: 'firefly', frames: ['*', '+', '.'], color: '#f6ffb0', fps: 5, ...flyAt, wander: 5 }],
+      [3200, { agent: 'director', op: 'move', name: 'sign', to: [signTo.x, signTo.y] }],
+    ];
+    script.forEach(([ms, c]) => setTimeout(() => game.command(c), ms));
+  };
+  // served by the local bridge? connect so outside agents can drive this world
+  const bridgeState = document.getElementById('bridgeState');
+  if (/^https?:$/.test(location.protocol) && !/claude\.ai|claudeusercontent|anthropic/.test(location.host)) {
+    fetch('/api/games', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(list => {
+      if (!Array.isArray(list)) return;
+      game.connect();
+      game.on('bridge', s => (bridgeState.textContent = s.connected ? 'Bridge connected: outside agents can build here.' : 'Bridge offline, retrying…'));
+    }).catch(() => {});
+  }
+
+  // ------------------------------------------------------------ panel 2: image -> ascii
+  const preview = document.getElementById('imgPreview'), colsIn = document.getElementById('imgCols'), rampIn = document.getElementById('imgRamp');
+  let sourceImg = null, converted = null;
+  function sampleImage() {
+    const c = document.createElement('canvas'); c.width = 160; c.height = 160; const x = c.getContext('2d');
+    const g = x.createRadialGradient(64, 60, 6, 80, 80, 62); g.addColorStop(0, '#fff6d8'); g.addColorStop(0.7, '#e8c870'); g.addColorStop(1, '#8a6a30');
+    x.fillStyle = g; x.beginPath(); x.arc(80, 80, 62, 0, Math.PI * 2); x.fill();
+    x.fillStyle = 'rgba(120,90,40,0.55)'; [[60, 55, 10], [100, 95, 14], [70, 110, 7], [105, 55, 6]].forEach(([a, b, r]) => { x.beginPath(); x.arc(a, b, r, 0, Math.PI * 2); x.fill(); });
+    return c;
+  }
+  function convert() {
+    document.getElementById('imgColsV').textContent = colsIn.value;
+    converted = ACI.fromImage(sourceImg, { cols: +colsIn.value, ramp: rampIn.value });
+    const f = converted.anims.default[0]; let html = '';
+    for (let y = 0; y < f.h; y++) { for (let x = 0; x < f.w; x++) { const c = f.cells[y * f.w + x]; html += c.ch === ' ' ? ' ' : `<span style="color:${c.fg}">${esc(c.ch)}</span>`; } html += '\n'; }
+    preview.innerHTML = html;
+  }
+  sourceImg = sampleImage(); convert();
+  colsIn.oninput = convert; rampIn.onchange = convert;
+  document.getElementById('imgFile').onchange = ev => { const file = ev.target.files[0]; if (file) ACI.loadImage(URL.createObjectURL(file)).then(img => { sourceImg = img; convert(); }); };
+  document.getElementById('imgPlace').onclick = () => {
+    const e = game.add(converted, { name: 'image-' + (Date.now() % 10000), reflect: true, owner: 'you' });
+    const p = freeNear(player.x + player.w + 3, player.y + player.h - e.h, e.w, e.h); e.x = p.x; e.y = p.y;
+  };
+
+  // ------------------------------------------------------------ panel 1: Claude as an in-page agent
+  const aiLog = document.getElementById('aiLog'), aiGo = document.getElementById('aiGo'), aiStop = document.getElementById('aiStop'), aiAsk = document.getElementById('aiAsk');
+  document.querySelectorAll('#ideas button').forEach(b => (b.onclick = () => { aiAsk.value = b.textContent; }));
+  document.getElementById('aiUndo').onclick = () => { const r = game.command({ agent: 'you', op: 'remove', owner: 'claude' }); addLog(aiLog, `<span class="ok">Removed ${r.removed} things Claude built.</span>`); };
+  let sample = null, ctl = null;
+  const off = () => { aiGo.disabled = true; document.getElementById('aiOff').hidden = false; };
+  if (window.claude && window.claude.use) {
+    window.claude.use('sample').then(async s => { sample = s; if (!s) return off(); const lim = await s.limits().catch(() => null); if (!lim || !lim.tools) off(); });
+  } else off();
+  const RULES = `You are "claude", a builder agent inside an ASCII game world made of character cells (x grows right, y grows down; a cell is about twice as tall as it is wide). You change the world only through the game_command tool, which takes ACI engine commands as JSON. Use "look" first to see the screen around the player (the camera follows them). Useful ops:
+- spawn {name, art, color, x, y, label?, frames?, fps?, colors?, palette?, wander?} — art is multi-line ASCII, spaces transparent. Make art detailed but small (4-14 wide, 2-8 tall). Use colors+palette for multi-colour art: colors has the same shape as art, each char a palette key.
+- say {name, text}, move {name, to:[x,y]}, set {name, ...}, remove {name}
+- Existing entities: "you" (the player), "mochi" (a cat). Reusable assets: tree, pine, wanderer, cat (spawn {asset:"tree"}).
+Place things on grass near the player, not in water (the "~ - =" area) or rocks ("#$&@%"). Use unique names. You may batch several commands in one call as an array. When done, reply with one short sentence about what you built.`;
+  aiStop.onclick = () => ctl && ctl.abort();
+  aiGo.onclick = async () => {
+    if (!sample) return;
+    const ask = aiAsk.value.trim(); if (!ask) return;
+    ctl = new AbortController(); aiGo.disabled = true; aiStop.hidden = false;
+    addLog(aiLog, `<span class="a">you:</span> ${esc(ask)}\n<span class="say">Thinking...</span>`);
+    const head = aiLog.firstChild;
+    let steps = 0;
+    const tools = [
+      { name: 'game_look', description: 'Returns the current screen as text rows (row 0 is the top), the camera offset (add it to screen coords to get world coords), the player position and the visible entities.', execute: () => { const r = game.command({ agent: 'claude', op: 'look' }); return { camera: r.camera, player: { x: Math.round(player.x), y: Math.round(player.y), w: player.w, h: player.h }, screen: r.screen.split('\n').map((l, i) => String(i).padStart(2, '0') + '|' + l).join('\n'), visible: r.visible.slice(0, 40) }; } },
+      { name: 'game_command', description: 'Runs one ACI command object, or an array of them, as agent "claude". Returns the results ({ok, ...} or {ok:false, error}).', inputSchema: { type: 'object', properties: { command: { description: 'a command object like {"op":"spawn",...} or an array of them' } }, required: ['command'] },
+        execute: input => { let c = input.command; if (typeof c === 'string') c = JSON.parse(c); const list = [].concat(c).map(x => ({ ...x, agent: 'claude' })); steps += list.length; aiLog.firstChild.textContent = `Building... ${steps} command${steps === 1 ? '' : 's'} so far`; const r = list.map(x => game.command(x)); return r.length === 1 ? r[0] : r; } },
+    ];
+    try {
+      const { text } = await sample(RULES + '\n\nRequest: ' + ask, { tools, signal: ctl.signal, onText: () => {} });
+      aiLog.firstChild.textContent = '';
+      addLog(aiLog, `<span class="ok">claude:</span> ${esc(text.trim().split('\n').filter(Boolean).pop() || 'Done.')}`);
+    } catch (e) {
+      const msg = { cancelled: 'Stopped.', not_granted: 'Claude is turned off for this page.', rate_limited: 'Too many requests just now. Try again in a minute.', tools_unavailable: 'This view cannot run Claude tools.' }[e && e.code] || ('Claude could not finish: ' + (e && e.message || 'unknown error'));
+      addLog(aiLog, `<span class="err">${esc(msg)}</span>`);
+      if (e && (e.code === 'not_granted' || e.code === 'tools_unavailable')) off();
+    } finally { aiGo.disabled = !sample; aiStop.hidden = true; }
+  };
+})();
+</script>

@@ -1,0 +1,178 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "house",
+ "world": {
+  "cols": 60,
+  "rows": 24
+ },
+ "environment": {
+  "preset": "dungeon",
+  "params": {
+   "stone": "#7a6a5a"
+  }
+ },
+ "gravity": 0,
+ "camera": {
+  "follow": "hero"
+ },
+ "tilemaps": [
+  {
+   "name": "Walls",
+   "rows": [
+    "########################################",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "#                                      #",
+    "########################################"
+   ],
+   "legend": {
+    "#": {
+     "char": "█",
+     "color": "#9a6a48",
+     "solid": true
+    }
+   },
+   "x": 10,
+   "y": 4
+  }
+ ],
+ "entities": [
+  {
+   "id": 14,
+   "name": "hero",
+   "x": 28,
+   "y": 15,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "reflect": true,
+   "behaviours": [
+    {
+     "name": "TopDownMove",
+     "params": {
+      "speed": 14
+     }
+    },
+    {
+     "name": "CameraFollow",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "name": "Sage",
+   "x": 24,
+   "y": 9,
+   "z": 0,
+   "tags": [
+    "npc"
+   ],
+   "sprite": {
+    "asset": "npc"
+   },
+   "behaviours": [
+    {
+     "name": "SayOnClick",
+     "params": {
+      "text": "Nothing here but dust... and wisdom."
+     }
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "name": "exit",
+   "x": 28,
+   "y": 18,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "door"
+   },
+   "trigger": true,
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "main",
+      "transition": "fade"
+     }
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "name": "exit label",
+   "x": 29,
+   "y": 17,
+   "z": 20,
+   "tags": [],
+   "sprite": "EXIT",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#c09050"
+   }
+  },
+  {
+   "id": 18,
+   "name": "coin",
+   "x": 36,
+   "y": 8,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {}
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Coins 0",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   },
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Coins"
+     }
+    }
+   ]
+  }
+ ]
+}

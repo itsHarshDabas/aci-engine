@@ -1,0 +1,38 @@
+{
+ "aci": 1,
+ "name": "firefly",
+ "w": 3,
+ "h": 1,
+ "fps": 5,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     ".*."
+    ],
+    "colors": [
+     "aaa"
+    ]
+   },
+   {
+    "text": [
+     "-*-"
+    ],
+    "colors": [
+     "aaa"
+    ]
+   },
+   {
+    "text": [
+     "+*+"
+    ],
+    "colors": [
+     "aaa"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#e8ff7a"
+ }
+}

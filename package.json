@@ -1,0 +1,42 @@
+{
+  "name": "aci-engine",
+  "version": "0.3.0",
+  "description": "ACI Renderer Engine: a beginner-friendly ASCII game engine and editor. Run `npx aci` to open the editor in your browser.",
+  "main": "aci.js",
+  "type": "commonjs",
+  "bin": {
+    "aci": "bin/aci.mjs",
+    "aci-mcp": "bridge/mcp.mjs"
+  },
+  "scripts": {
+    "start": "node bin/aci.mjs",
+    "dev": "node bin/aci.mjs --no-open",
+    "mcp": "node bin/aci.mjs mcp"
+  },
+  "files": [
+    "aci.js",
+    "modules/",
+    "runtime/",
+    "server/",
+    "bin/",
+    "bridge/",
+    "editor/",
+    "templates/",
+    "examples/",
+    "docs/",
+    "tools/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ascii",
+    "game-engine",
+    "canvas",
+    "mcp",
+    "ai-agents",
+    "text-mode"
+  ],
+  "license": "MIT"
+}

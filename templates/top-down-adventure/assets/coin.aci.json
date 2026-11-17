@@ -1,0 +1,46 @@
+{
+ "aci": 1,
+ "name": "coin",
+ "w": 1,
+ "h": 1,
+ "fps": 6,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     "o"
+    ],
+    "colors": [
+     "a"
+    ]
+   },
+   {
+    "text": [
+     "O"
+    ],
+    "colors": [
+     "a"
+    ]
+   },
+   {
+    "text": [
+     "0"
+    ],
+    "colors": [
+     "a"
+    ]
+   },
+   {
+    "text": [
+     "O"
+    ],
+    "colors": [
+     "a"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#ffd24a"
+ }
+}

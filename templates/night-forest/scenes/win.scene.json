@@ -1,0 +1,89 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "win",
+ "world": {
+  "cols": 80,
+  "rows": 30
+ },
+ "environment": {
+  "preset": "night",
+  "params": {}
+ },
+ "gravity": 0,
+ "camera": {},
+ "tilemaps": [],
+ "entities": [
+  {
+   "id": 22,
+   "name": "title",
+   "x": 31,
+   "y": 12,
+   "z": 20,
+   "tags": [],
+   "sprite": "THE FOREST IS LIT",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   }
+  },
+  {
+   "id": 23,
+   "name": "sub",
+   "x": 25,
+   "y": 15,
+   "z": 20,
+   "tags": [],
+   "sprite": "Walk into the fire to go again",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#9ab"
+   }
+  },
+  {
+   "id": 24,
+   "name": "campfire",
+   "x": 38,
+   "y": 19,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "campfire"
+   },
+   "reflect": false,
+   "trigger": true,
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "main",
+      "transition": "fade"
+     }
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "name": "hero",
+   "x": 30,
+   "y": 19,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "reflect": true,
+   "behaviours": [
+    {
+     "name": "TopDownMove",
+     "params": {
+      "speed": 14
+     }
+    }
+   ]
+  }
+ ]
+}

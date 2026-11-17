@@ -1,0 +1,8 @@
+{
+ "name": "Space shooter",
+ "description": "Defend the screen: a fleet of invaders marches down. Move, shoot, win. Includes three small behaviour scripts to learn from.",
+ "tags": [
+  "arcade",
+  "scripts"
+ ]
+}

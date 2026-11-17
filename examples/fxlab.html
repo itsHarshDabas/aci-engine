@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI FX Lab</title>
+<style>html,body{margin:0;height:100%;background:#05070d;overflow:hidden}#screen{position:fixed;inset:0}</style>
+</head><body>
+<div id="screen"></div>
+<script src="../aci.js"></script>
+<script src="../modules/anim.js"></script>
+<script>
+/*  FX Lab — every animation feature on one screen.
+    click: burst of the selected preset   1-9,0: pick preset   F: fire   W: snow   R: rain
+    T: next screen transition   H: shake   SPACE: attack animation   E: re-run the easing race  */
+const game = ACI.game('#screen', { fontSize: 14 });
+const A = ACI.anim, hud = game.screen, W = () => game.cols, H = () => game.rows;
+const presets = ['explosion', 'spark', 'confetti', 'sparkle', 'pickup', 'heal', 'hit', 'dust', 'smoke', 'bubbles'];
+let sel = 0, trType = 0, fire = null, snow = null, rain = null;
+const types = ['fade', 'wipe', 'iris', 'dissolve', 'blinds'];
+
+game.layer((x, y, t) => (y === H() - 7 ? ['─', '#1c2540'] : null));
+
+// ----- animated hero: idle loops, attack plays once then returns to idle
+const hero = game.add(A.sprite({
+  idle: String.raw`
+ o
+/|\
+/ \
+---
+ o
+/|\
+/ \
+`,
+  attack: String.raw`
+ o
+/|\
+/ \
+---
+ o_
+/|
+/ \
+---
+ o  ~~~>
+/|--
+/ \
+---
+ o
+/|\
+/ \
+`,
+}, { color: '#cfe', fps: 6 }), { x: 6, y: H() - 11, label: 'hero', reflect: false });
+game.animate(hero, 'idle', { pingpong: true, fps: 2 });
+function attack() { game.animate(hero, 'attack', { loop: false, fps: 9, then: 'idle', onFrame: { 2: e => { game.burst(e.x + 9, e.y + 1, 'spark', { count: 8 }); game.shake(1.5, 0.15); } } }); }
+
+// ----- easing race: eleven runners, same tween, different easing
+const eases = ['linear', 'inQuad', 'outQuad', 'inOutCubic', 'outBack', 'outElastic', 'outBounce', 'steps(6)'];
+const runners = eases.map((name, i) => { const e = game.add(ACI.sprite('@', { color: A.hsl(i * 40, 80, 65) }), { x: 18, y: 6 + i, reflect: false }); e.easeName = name; return e; });
+async function race() {
+  runners.forEach(r => (r.x = 18));
+  const to = Math.min(W() - 12, 70);
+  await Promise.all(runners.map(r => game.tween(r, { x: to }, 2, { ease: r.easeName })));
+  await game.wait(0.4);
+}
+race();
+
+// ----- text effects
+game.fx.text(W() / 2, 1, 'A C I   F X   L A B', { center: true, effects: ['rainbow', 'wave'], amp: 1, speed: 3 });
+game.fx.text(W() / 2, 3, 'typewriter · shake · pulse · blink · wave · rainbow', { center: true, color: '#7a8bb0', effects: ['typewriter'], cps: 60 });
+game.fx.text(W() - 22, 6, 'S H A K E Y', { effects: ['shake'], amp: 1, color: '#ff8a8a' });
+game.fx.text(W() - 22, 8, 'pulsing text', { effects: ['pulse'], color: '#445', color2: '#9fd', speed: 5 });
+
+// ----- input
+game.on('click', p => { if (p.y < H() - 7) game.burst(p.x, p.y, presets[sel]); });
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (/^[0-9]$/.test(k)) sel = (+k + 9) % 10;
+  if (k === 'f') { if (fire) { fire.remove(); fire = null; } else fire = game.emitter({ preset: 'fire', x: W() / 2, y: H() - 9, rate: 40 }); }
+  if (k === 'w') { if (snow) { snow.remove(); snow = null; } else snow = game.emitter({ preset: 'snow', area: { x: 0, y: -1, w: W(), h: 1 }, rate: 25 }); }
+  if (k === 'r') { if (rain) { rain.remove(); rain = null; } else rain = game.emitter({ preset: 'rain', area: { x: 0, y: -1, w: W(), h: 1 }, rate: 90 }); }
+  if (k === 'h') game.shake(4, 0.5);
+  if (k === 'e') race();
+  if (k === ' ') attack();
+  if (k === 't') { const type = types[trType++ % types.length]; game.transition({ type, dir: 'out', dur: 0.6 }).then(() => game.transition({ type, dir: 'in', dur: 0.6 })); }
+});
+game.onDraw(() => {
+  hud.text(2, 5, 'EASING RACE (E)', '#7a8bb0');
+  runners.forEach(r => hud.text(2, Math.round(r.y), r.easeName.padEnd(11), '#567'));
+  presets.forEach((p, i) => hud.text(W() - 30 + (i >= 5 ? 16 : 0), H() - 6 + (i % 5), (i === sel ? '▶' : ' ') + ((i + 1) % 10) + ' ' + p, i === sel ? '#ffd24a' : '#567'));
+  hud.text(2, H() - 5, 'click: burst   F fire   W snow   R rain   T transition   H shake   SPACE attack', '#7a8bb0');
+  hud.text(2, H() - 3, 'particles: ' + game.particleCount() + '   fps: ' + game.fps, '#334');
+});
+</script>
+</body></html>

@@ -1,0 +1,109 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "gameover",
+ "world": {
+  "cols": 80,
+  "rows": 34
+ },
+ "environment": {
+  "preset": "space",
+  "params": {
+   "nebulaAmount": 0.22
+  }
+ },
+ "gravity": 0,
+ "camera": {},
+ "tilemaps": [],
+ "entities": [
+  {
+   "id": 33,
+   "name": "title",
+   "x": 32,
+   "y": 12,
+   "z": 20,
+   "tags": [],
+   "sprite": "GAME OVER",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ff5566"
+   }
+  },
+  {
+   "id": 34,
+   "name": "score",
+   "x": 36,
+   "y": 15,
+   "z": 20,
+   "tags": [],
+   "sprite": "Score",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#9ab"
+   }
+  },
+  {
+   "id": 35,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Score 0",
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Score"
+     }
+    }
+   ]
+  },
+  {
+   "id": 36,
+   "name": "again",
+   "x": 20,
+   "y": 20,
+   "z": 0,
+   "tags": [],
+   "sprite": "[ press the ship to play again ]",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#4fd07a"
+   },
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "main",
+      "transition": "wipe"
+     }
+    }
+   ]
+  },
+  {
+   "id": 37,
+   "name": "pilot",
+   "x": 37,
+   "y": 22,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "ship"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 3
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "aci": 1,
+ "name": "bullet",
+ "w": 1,
+ "h": 1,
+ "fps": 6,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     "!"
+    ],
+    "colors": [
+     "a"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#ffffff"
+ }
+}

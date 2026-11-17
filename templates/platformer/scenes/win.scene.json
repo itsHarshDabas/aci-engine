@@ -1,0 +1,150 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "win",
+ "world": {
+  "cols": 60,
+  "rows": 24
+ },
+ "environment": {
+  "preset": "night",
+  "params": {}
+ },
+ "gravity": 60,
+ "camera": {},
+ "tilemaps": [
+  {
+   "name": "Floor",
+   "rows": [
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "                                                            ",
+    "############################################################",
+    "############################################################",
+    "############################################################",
+    "############################################################"
+   ],
+   "legend": {
+    "#": {
+     "char": "▓",
+     "color": "#6b7a9a",
+     "solid": true
+    }
+   },
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "entities": [
+  {
+   "id": 29,
+   "name": "hero",
+   "x": 6,
+   "y": 17,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "friction": 14,
+   "behaviours": [
+    {
+     "name": "PlatformerMove",
+     "params": {
+      "speed": 16,
+      "jump": 26
+     }
+    }
+   ]
+  },
+  {
+   "id": 30,
+   "name": "title",
+   "x": 26,
+   "y": 6,
+   "z": 20,
+   "tags": [],
+   "sprite": "YOU WIN!",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   }
+  },
+  {
+   "id": 31,
+   "name": "sub",
+   "x": 20,
+   "y": 9,
+   "z": 20,
+   "tags": [],
+   "sprite": "Walk into the sign to play again",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#9ab"
+   }
+  },
+  {
+   "id": 32,
+   "name": "again",
+   "x": 38,
+   "y": 19,
+   "z": 0,
+   "tags": [],
+   "sprite": "[ play again ]",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#4fd07a"
+   },
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "main",
+      "transition": "wipe"
+     }
+    }
+   ]
+  },
+  {
+   "id": 33,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Coins 0",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   },
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Coins"
+     }
+    }
+   ]
+  }
+ ]
+}

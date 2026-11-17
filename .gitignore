@@ -1,0 +1,19 @@
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+# local workspaces / test projects
+ACI Projects/
+.aci-workspace/
+tmp/
+# packaging build outputs
+*.tgz
+python/dist/
+python/build/
+python/**/*.egg-info/
+python/src/aci_engine/app/
+__pycache__/
+*.pyc
+.venv/

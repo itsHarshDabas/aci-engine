@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ACI editor panel mock (no shell needed)</title>
+<style>
+:root{--bg:#0b0f1a;--panel:#111830;--panel-2:#162040;--line:#26335a;--ink:#dfe8ff;--muted:#7a8bb0;--accent:#4a78ff;--accent-ink:#fff;--danger:#ff5566;--ok:#4fd07a;--mono:ui-monospace,Menlo,monospace;--sans:system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px var(--sans);display:grid;grid-template:"l c r" 1fr "l b r" 240px/300px 1fr 280px;height:100vh}
+#l{grid-area:l;overflow:auto;background:var(--panel)}#r{grid-area:r;overflow:auto;background:var(--panel)}#b{grid-area:b;overflow:auto;background:var(--panel)}#c{grid-area:c;position:relative}#scene{position:absolute;inset:0}
+</style></head><body><div id="l"></div><div id="c"><div id="scene"></div></div><div id="r"></div><div id="b"></div>
+<script src="../aci.js"></script>
+<script src="../modules/tilemap.js"></script>
+<script src="../modules/convert.js"></script>
+<script src="../modules/anim.js"></script>
+<script src="../modules/environments.js"></script>
+<script>
+const listeners = {}, files = {};
+const game = ACI.game('#scene', { fontSize: 14, world: { cols: 120, rows: 60 } });
+const scene = { format: 'aci-scene', v: 1, name: 'main', world: { cols: 120, rows: 60 }, environment: { preset: 'grass', params: {} }, tilemaps: [], entities: [] };
+const tools = {}, panels = {}, assetEditors = [], importers = [], inspectors = [];
+let activeTool = null;
+window.ACIEditor = {
+  registerPanel: p => { panels[p.id] = p; const host = document.getElementById({ left: 'l', right: 'r', bottom: 'b' }[p.dock]); const el = document.createElement('div'); el.dataset.panel = p.id; host.appendChild(el); p.mount(el, ed); },
+  registerSceneTool: t => { tools[t.id] = t; }, registerAssetEditor: a => assetEditors.push(a), registerImporter: i => importers.push(i), registerInspector: i => inspectors.push(i),
+};
+const ed = window.ed = {
+  game, scene, sceneName: 'main', projectId: 'mock', project: { name: 'mock' }, selection: null,
+  select(e) { ed.selection = e; ed.emit('select', e); },
+  fs: { read: async p => { if (!(p in files)) throw new Error('404 ' + p); return files[p]; }, write: async (p, t) => { files[p] = t; ed.emit('assets'); }, list: async () => Object.keys(files).map(path => ({ path, type: 'file' })), remove: async p => { delete files[p]; } },
+  markDirty() { ed.dirty = (ed.dirty || 0) + 1; }, undo: { stack: [], push(label, u, r) { this.stack.push({ label, u, r }); } },
+  log: (m, l) => console.log('[ed]', l || 'info', m), on(ev, f) { (listeners[ev] = listeners[ev] || []).push(f); }, emit(ev, d) { (listeners[ev] || []).forEach(f => f(d)); },
+  assets: {}, refreshAssets() { ed.emit('assets'); }, openAsset(p) { ed.opened = p; },
+};
+window.__tools = tools; window.__panels = panels; window.__assetEditors = assetEditors; window.__importers = importers; window.__files = files; window.__ed = ed; window.__inspectors = inspectors;
+// scene tool plumbing: pointer events from the canvas
+(function () {
+  const cv = game.canvas;
+  const cell = ev => { const r = cv.getBoundingClientRect(); return game.toWorld(Math.floor((ev.clientX - r.left) / game.cellW), Math.floor((ev.clientY - r.top) / game.cellH)); };
+  ['pointerdown', 'pointermove', 'pointerup'].forEach(n => cv.addEventListener(n, ev => { if (!activeTool) return; const t = tools[activeTool]; t.pointer && t.pointer({ type: n.slice(7) === 'down' ? 'down' : n.slice(7) === 'up' ? 'up' : 'move', shiftKey: ev.shiftKey, altKey: ev.altKey, buttons: ev.buttons, raw: ev }, cell(ev), ed); }));
+  game.onDraw(() => { const t = activeTool && tools[activeTool]; if (t && t.draw) t.draw(game, ed); });
+  window.__setTool = id => { if (activeTool) tools[activeTool].deactivate && tools[activeTool].deactivate(ed); activeTool = id; tools[id].activate && tools[id].activate(ed); };
+  ACI.environments.apply(game, scene.environment, -100);
+})();
+</script>
+<script src="../editor/panels/tile-painter.js"></script>
+</body></html>
+<script src="../editor/panels/sprite-painter.js"></script>
+<script src="../editor/panels/timeline.js"></script>
+<script src="../editor/panels/importer.js"></script>
+<script src="../editor/panels/hires.js"></script>

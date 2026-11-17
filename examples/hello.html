@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello ACI</title>
+<style>html, body { margin: 0; height: 100%; background: #0a0e1a; } #screen { height: 100%; }</style>
+<div id="screen"></div>
+<script src="../aci.js"></script>
+<script>
+// The smallest useful ACI game: a scrolling field, a hero that walks, a camera that follows.
+const game = ACI.game('#screen', { world: { cols: 200, rows: 60 } });
+
+// 1. Background: a function that returns [character, colour] for every cell.
+game.layer((x, y, t) => {
+  const sway = Math.sin(x * 0.2 + y * 0.1 - t * 2);
+  return [sway > 0.5 ? '/' : sway < -0.5 ? '\\' : '|', ACI.mix('#1d5a2a', '#7ad468', ACI.hash(x, y))];
+});
+
+// 2. A hand-made sprite with an idle and a walk animation.
+const hero = game.add(ACI.sprite({
+  idle: [String.raw`
+ o
+/|\
+/ \ `],
+  walk: [String.raw`
+ o
+/|\
+/ |`, String.raw`
+ o
+/|\
+| \ `],
+}, { color: '#ffe08a', fps: 8 }), { x: 20, y: 20, label: 'me' });
+game.follow(hero);
+
+// 3. Game logic, every frame.
+game.onUpdate(dt => {
+  const dx = game.key('d', 'ArrowRight') - game.key('a', 'ArrowLeft');
+  const dy = game.key('s', 'ArrowDown') - game.key('w', 'ArrowUp');
+  hero.x = Math.max(0, Math.min(game.cols - hero.w, hero.x + dx * 15 * dt));
+  hero.y = Math.max(0, Math.min(game.rows - hero.h, hero.y + dy * 8 * dt));
+  if (dx) hero.flipX = dx < 0;
+  hero.play(dx || dy ? 'walk' : 'idle');
+});
+
+// 4. HUD in screen coordinates.
+game.onDraw(g => g.screen.text(1, 0, ' WASD to walk ', '#fff', '#000'));
+
+// 5. Optional: let AI agents build here when served by `node bridge/server.mjs`.
+if (location.port === '7777') game.connect();
+</script>

@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>ACI all modules</title>
+<body style="margin:0;background:#0a0e1a"><div id="screen" style="width:100vw;height:100vh"></div>
+<script src="../aci.js"></script>
+<script src="physics.js"></script><script src="tilemap.js"></script><script src="scenes.js"></script>
+<script src="input.js"></script><script src="sound.js"></script><script src="save.js"></script>
+<script>
+const game = ACI.game('#screen'); window.game = game;
+game.physics.gravity = 30;
+const map = game.tilemap(['#'.repeat(40), '#' + ' '.repeat(38) + '#', '#' + ' '.repeat(38) + '#', '#' + ' '.repeat(38) + '#', '#'.repeat(40)],
+  { '#': { char: '#', color: '#8a7a55', solid: true } }, { y: Math.max(0, game.rows - 5) });
+const hero = game.add(ACI.sprite(' o \n/|\\\n/ \\', { color: '#7cc96d' }), { x: 5, y: 2, vx: 0, solid: true, friction: 12, tag: 'player' });
+game.onUpdate(() => {
+  const m = game.input.axis('left', 'right'); hero.vx = m * 14;
+  if (hero.grounded && game.input.pressed('jump')) { hero.vy = -28; game.sound.sfx('jump'); }
+});
+game.onDraw(() => {
+  const mods = ['physics', 'tilemap', 'scene', 'input', 'sound', 'saves'].map(k => (game[k] ? '+' : '-') + k).join('  ');
+  game.screen.text(1, 0, 'ACI modules: ' + mods, '#e8c870');
+  game.screen.text(1, 1, 'arrows/A-D move, SPACE jump (sound), F5 save, F9 load', '#8490ae');
+});
+addEventListener('keydown', e => { if (e.key === 'F5') { e.preventDefault(); game.save('demo'); } if (e.key === 'F9') { e.preventDefault(); game.load('demo'); } });
+</script>

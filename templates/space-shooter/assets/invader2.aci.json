@@ -1,0 +1,38 @@
+{
+ "aci": 1,
+ "name": "invader2",
+ "w": 6,
+ "h": 3,
+ "fps": 2,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     " _/\\_",
+     "(o  o)",
+     " /vv\\"
+    ],
+    "colors": [
+     " aaaa",
+     "aa  aa",
+     " aaaa"
+    ]
+   },
+   {
+    "text": [
+     " _/\\_",
+     "(o  o)",
+     " \\^^/"
+    ],
+    "colors": [
+     " aaaa",
+     "aa  aa",
+     " aaaa"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#ffd24a"
+ }
+}

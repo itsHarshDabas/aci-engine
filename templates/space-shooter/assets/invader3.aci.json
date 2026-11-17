@@ -1,0 +1,34 @@
+{
+ "aci": 1,
+ "name": "invader3",
+ "w": 5,
+ "h": 2,
+ "fps": 2,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     "[o_o]",
+     " /|\\"
+    ],
+    "colors": [
+     "aaaaa",
+     " aaa"
+    ]
+   },
+   {
+    "text": [
+     "[o_o]",
+     " \\|/"
+    ],
+    "colors": [
+     "aaaaa",
+     " aaa"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#6bf0a0"
+ }
+}

@@ -1,0 +1,737 @@
+{
+ "format": "aci-scene",
+ "v": 1,
+ "name": "main",
+ "world": {
+  "cols": 160,
+  "rows": 40
+ },
+ "environment": {
+  "preset": "night",
+  "params": {
+   "sky": "#0a1030"
+  }
+ },
+ "gravity": 60,
+ "camera": {
+  "follow": "hero"
+ },
+ "tilemaps": [
+  {
+   "name": "Level",
+   "rows": [
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                         =========                   ===========                                                              #",
+    "#                                                                                                                   =========                                  #",
+    "#                           =========                                                                                                                          #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                     ===========                                                                              #",
+    "#             =========                                                                             ===========                                                #",
+    "#                                       =============                                                                             ===========                  #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "#                                                                                                                                                              #",
+    "################################################################################################################################################################",
+    "################################################################################################################################################################",
+    "################################################################################################################################################################",
+    "################################################################################################################################################################",
+    "################################################################################################################################################################",
+    "################################################################################################################################################################"
+   ],
+   "legend": {
+    "#": {
+     "char": "▓",
+     "color": "#6b7a9a",
+     "solid": true
+    },
+    "=": {
+     "char": "=",
+     "color": "#b0643c",
+     "solid": true
+    }
+   },
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "entities": [
+  {
+   "id": 24,
+   "name": "hero",
+   "x": 4,
+   "y": 31,
+   "z": 0,
+   "tags": [
+    "player"
+   ],
+   "sprite": {
+    "asset": "hero"
+   },
+   "solid": true,
+   "friction": 14,
+   "behaviours": [
+    {
+     "name": "PlatformerMove",
+     "params": {
+      "speed": 16,
+      "jump": 26
+     }
+    },
+    {
+     "name": "CameraFollow",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "name": "coin0a",
+   "x": 16,
+   "y": 26,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "coin0b",
+   "x": 20,
+   "y": 26,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "name": "coin1a",
+   "x": 30,
+   "y": 22,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "name": "coin1b",
+   "x": 34,
+   "y": 22,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "name": "coin2a",
+   "x": 42,
+   "y": 27,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "name": "coin2b",
+   "x": 50,
+   "y": 27,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "name": "coin3a",
+   "x": 60,
+   "y": 20,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "name": "coin3b",
+   "x": 64,
+   "y": 20,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "name": "coin4a",
+   "x": 72,
+   "y": 25,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "name": "coin4b",
+   "x": 78,
+   "y": 25,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "name": "coin5a",
+   "x": 88,
+   "y": 20,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "name": "coin5b",
+   "x": 94,
+   "y": 20,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "name": "coin6a",
+   "x": 102,
+   "y": 26,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "name": "coin6b",
+   "x": 108,
+   "y": 26,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "name": "coin7a",
+   "x": 118,
+   "y": 21,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "name": "coin7b",
+   "x": 122,
+   "y": 21,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "name": "coin8a",
+   "x": 132,
+   "y": 27,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "name": "coin8b",
+   "x": 138,
+   "y": 27,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "coin"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Bob",
+     "params": {
+      "amplitude": 0.5,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Collectible",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "name": "spikes1",
+   "x": 50,
+   "y": 33,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "spike"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "name": "spikes2",
+   "x": 84,
+   "y": 33,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "spike"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "name": "spikes3",
+   "x": 120,
+   "y": 33,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "spike"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "name": "slime1",
+   "x": 62,
+   "y": 32,
+   "z": 0,
+   "tags": [
+    "enemy"
+   ],
+   "sprite": {
+    "asset": "slime"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Patrol",
+     "params": {
+      "distance": 9,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "name": "slime2",
+   "x": 104,
+   "y": 32,
+   "z": 0,
+   "tags": [
+    "enemy"
+   ],
+   "sprite": {
+    "asset": "slime"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "Patrol",
+     "params": {
+      "distance": 9,
+      "speed": 4
+     }
+    },
+    {
+     "name": "Hazard",
+     "params": {}
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "name": "goal",
+   "x": 152,
+   "y": 31,
+   "z": 0,
+   "tags": [],
+   "sprite": {
+    "asset": "flag"
+   },
+   "reflect": false,
+   "behaviours": [
+    {
+     "name": "DoorToScene",
+     "params": {
+      "scene": "win",
+      "transition": "fade"
+     }
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "name": "goal label",
+   "x": 151,
+   "y": 29,
+   "z": 20,
+   "tags": [],
+   "sprite": "GOAL",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   }
+  },
+  {
+   "id": 27,
+   "name": "help",
+   "x": 3,
+   "y": 26,
+   "z": 20,
+   "tags": [],
+   "sprite": "Arrows / WASD to run, Space to jump. Spikes and slimes restart the level.",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#7a8bb0"
+   }
+  },
+  {
+   "id": 28,
+   "name": "hud",
+   "x": 1,
+   "y": 0,
+   "z": 100,
+   "tags": [],
+   "sprite": "Coins 0",
+   "reflect": false,
+   "spriteOpts": {
+    "color": "#ffd24a"
+   },
+   "behaviours": [
+    {
+     "name": "ScoreText",
+     "params": {
+      "label": "Coins",
+      "reset": true
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI input, sound, save demo</title>
+<style>
+  html,body{margin:0;background:#070a14;color:#d8def0;font:13px monospace}
+  #screen{height:60vh;border-bottom:1px solid #1d2640;touch-action:none}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px}
+  button{font:inherit;background:#0d1222;color:#d8def0;border:1px solid #5d7fc4;border-radius:4px;padding:6px 10px;cursor:pointer}
+</style></head><body>
+<div id="screen"></div>
+<div class="bar">
+  <button id="save">Save (F5)</button><button id="load">Load (F9)</button><button id="touch">Touch pad</button>
+  <button id="music">Music</button><button id="mute">Mute</button>
+  <span>Move: WASD/arrows (or d-pad). Keys 1-6: sfx. Click the screen to teleport. Space = jump (pressed counter).</span>
+</div>
+<script src="../aci.js"></script>
+<script src="input.js"></script><script src="sound.js"></script><script src="save.js"></script>
+<script>
+const G = window.G = ACI.game('#screen', { fontSize: 14 });
+const hero = G.add(ACI.sprite(' o \n/|\\\n/ \\', { color: '#e8c870' }), { x: 10, y: 6, name: 'hero', score: 0 });
+let jumps = 0, held = 0;
+G.saves.track('jumps', () => jumps, v => (jumps = v));
+G.input.map({ jump: ['space'], sfx1: ['1'], sfx2: ['2'], sfx3: ['3'], sfx4: ['4'], sfx5: ['5'], sfx6: ['6'], save: ['f5'], load: ['f9'] });
+const SFX = ['jump', 'coin', 'hit', 'explode', 'powerup', 'blip'];
+G.onUpdate(dt => {
+  const I = G.input, v = I.vector();
+  hero.x += v.x * 20 * dt; hero.y += v.y * 10 * dt;
+  SFX.forEach((n, i) => { if (I.pressed('sfx' + (i + 1))) G.sound.sfx(n); });
+  if (I.pressed('jump')) { jumps++; G.sound.sfx('jump'); }
+  if (I.pressed('save')) G.save('slot1');
+  if (I.pressed('load')) G.load('slot1');
+  const c = I.clicked(); if (c) { hero.x = c.x; hero.y = c.y; G.sound.sfx('blip'); }
+});
+G.onDraw(g => {
+  const I = G.input;
+  g.screen.text(1, 1, 'jumps ' + jumps + '  down(jump)=' + I.down('jump') + '  pressed=' + I.pressed('jump') + '  released=' + I.released('jump'), '#9ab');
+  g.screen.text(1, 2, 'saves: ' + G.saves.list().map(s => s.slot).join(',') + ' [' + G.saves.backend() + ']  audio: ' + G.sound.state, '#9ab');
+});
+G.layer((x, y) => (y === G.rows - 2 ? ['_', '#3a5a3a'] : null));
+document.getElementById('save').onclick = () => G.save('slot1');
+document.getElementById('load').onclick = () => G.load('slot1');
+document.getElementById('touch').onclick = () => G.input.touchControls();
+document.getElementById('music').onclick = () => (G.sound.musicPlaying ? G.sound.stop() : G.sound.music(['C4 E4 G4 E4 C4 E4 G4 -', 'C2 - - - G1 - - -'], { bpm: 140, wave: ['square', 'triangle'] }));
+document.getElementById('mute').onclick = () => G.sound.mute();
+</script></body></html>

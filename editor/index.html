@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI Editor</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23121726'/><text x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%23f0c766' text-anchor='middle'>@</text></svg>">
+<link rel="stylesheet" href="/editor/editor.css">
+<!-- engine: same files the player loads, plus the converter for imports -->
+<script src="/aci.js"></script>
+<script src="/modules/anim.js"></script>
+<script src="/modules/physics.js"></script>
+<script src="/modules/tilemap.js"></script>
+<script src="/modules/scenes.js"></script>
+<script src="/modules/input.js"></script>
+<script src="/modules/sound.js"></script>
+<script src="/modules/save.js"></script>
+<script src="/modules/project.js"></script>
+<script src="/modules/environments.js"></script>
+<script src="/modules/convert.js"></script>
+<script src="/modules/cutscene.js" onerror="this.remove()"></script>
+<script src="/modules/hud.js" onerror="this.remove()"></script>
+<script src="/runtime/behaviours.js"></script>
+</head>
+<body>
+<!-- ============ project launcher ============ -->
+<div id="launcher" hidden>
+  <nav>
+    <div class="logo"><span><b>ACI</b> Engine</span><small id="verTag"></small></div>
+    <a href="#" class="on" data-nav="projects"><i>▦</i> Projects</a>
+    <a href="#" data-nav="learn"><i>?</i> Learn</a>
+    <a href="#" data-nav="agents"><i>◎</i> AI agents</a>
+    <div class="foot" id="wsPath"></div>
+  </nav>
+  <main id="launchMain"></main>
+</div>
+
+<!-- ============ editor ============ -->
+<div id="app" hidden>
+  <header id="topbar">
+    <div class="logo" id="homeBtn" title="All projects"><span><b>ACI</b></span></div>
+    <button class="btn ghost" id="projBtn"><span id="projName">Project</span> <span class="muted">▾</span></button>
+    <span class="sep"></span>
+    <select class="field" id="sceneSel" style="width:150px" title="Scene"></select>
+    <button class="btn ghost icon" id="sceneAdd" title="New scene">+</button>
+    <div id="playbar">
+      <button class="btn" id="playBtn" title="Play (Ctrl+P)">▶</button>
+      <button class="btn" id="pauseBtn" title="Pause" disabled>❚❚</button>
+      <button class="btn" id="stepBtn" title="Step one frame" disabled>▶❚</button>
+      <button class="btn" id="stopBtn" title="Stop (Esc)" disabled>■</button>
+    </div>
+    <div class="spacer"></div>
+    <span id="saveState" class="muted" style="font-size:12px"></span>
+    <button class="btn" id="saveBtn" title="Save (Ctrl+S)">Save</button>
+    <button class="btn" id="openPlayBtn" title="Run the game in a new browser tab">Open in tab ↗</button>
+    <button class="btn primary" id="buildBtn" title="Export one HTML file you can share">Build</button>
+  </header>
+  <div id="work">
+    <section class="dock" id="dockLeft"><div class="tabs"></div></section>
+    <div class="split" id="splitL"></div>
+    <section id="centre">
+      <div class="tabs" id="centreTabs"></div>
+      <div class="toolbar" id="sceneTools"></div>
+      <div id="sceneWrap">
+        <div id="sceneView"></div>
+        <div id="gameView" hidden></div>
+        <div class="scene-hint" id="sceneHint">Drag to move · Middle-drag or Space to pan · Wheel to zoom · Drop assets here</div>
+      </div>
+    </section>
+    <div class="split" id="splitR"></div>
+    <section class="dock" id="dockRight"><div class="tabs"></div></section>
+    <div class="split" id="splitB"></div>
+    <section class="dock" id="dockBottom"><div class="tabs"></div></section>
+  </div>
+  <footer id="status"></footer>
+</div>
+<div id="toasts"></div>
+<script src="/editor/editor.js"></script>
+</body>
+</html>

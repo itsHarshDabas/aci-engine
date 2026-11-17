@@ -1,0 +1,38 @@
+{
+ "aci": 1,
+ "name": "ship",
+ "w": 5,
+ "h": 3,
+ "fps": 8,
+ "anims": {
+  "idle": [
+   {
+    "text": [
+     " /^\\",
+     "/###\\",
+     "|_^_|"
+    ],
+    "colors": [
+     " aaa",
+     "aaaaa",
+     "aaaaa"
+    ]
+   },
+   {
+    "text": [
+     " /^\\",
+     "/###\\",
+     "|_v_|"
+    ],
+    "colors": [
+     " aaa",
+     "aaaaa",
+     "aaaaa"
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "a": "#7fe3ff"
+ }
+}

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACI Invaders</title>
+<style>html,body{margin:0;height:100%;background:#05070d;overflow:hidden}#screen{position:fixed;inset:0}</style>
+</head><body>
+<div id="screen"></div>
+<script src="../aci.js"></script>
+<script src="../modules/anim.js"></script>
+<script>
+/*  ACI Invaders — ~200 lines. Shows: frame animation (ACI.anim.sprite), game.animate one-shots,
+    particles (burst), floating text, text effects, screen shake, transitions, tweens.
+    Arrow keys / A D to move, SPACE to fire.  */
+const game = ACI.game('#screen', { fontSize: 16 });
+const A = ACI.anim, hud = game.screen || game;
+const hi = () => { try { return +localStorage.aciInvadersHi || 0; } catch (e) { return 0; } };
+
+// ---------- art: every sprite is a few lines of text; '---' starts the next frame
+const shipSpr = A.sprite({ idle: String.raw`
+  /^\
+ /###\
+ |_^_|
+---
+  /^\
+ /###\
+ |_v_|` }, { color: '#7fe3ff', fps: 8 });
+const mk = (art, color) => A.sprite({
+  idle: art,
+  die: String.raw`
+ \|/
+-- --
+ /|\
+---
+ . '
+'   .
+ ' .
+---
+  .
+`}, { color, fps: 2 });
+const typeA = mk(String.raw`
+ /oo\
+<|##|>
+ /  \
+---
+ /oo\
+<|##|>
+ \  /`, '#ff6b9a');
+const typeB = mk(String.raw`
+ _/\_
+(o  o)
+ /vv\
+---
+ _/\_
+(o  o)
+ \^^/`, '#ffd24a');
+const typeC = mk(String.raw`
+[o_o]
+ /|\
+---
+[o_o]
+ \|/`, '#6bf0a0');
+const types = [typeA, typeB, typeB, typeC, typeC], pts = [30, 20, 20, 10, 10];
+
+// ---------- backdrop: two parallax star layers
+game.layer((x, y, t) => {
+  if (ACI.hash(x, y - Math.floor(t * 4), 1) < 0.012) return ['.', '#445066'];
+  if (ACI.hash(x, y - Math.floor(t * 9), 2) < 0.004) return ['+', '#99a8cc'];
+  return null;
+});
+
+// ---------- state
+let state = 'title', score = 0, lives = 3, wave = 1;
+let ship, enemies = [], bullets = [], bombs = [], shields = new Map();
+let startReq = false; addEventListener('keydown', e => { if (e.key === ' ') startReq = true; });
+let fx = 0, fy = 0, dir = 1, cool = 0, bombT = 1, invuln = 0, titleFx = [];
+const W = () => game.cols, H = () => game.rows;
+
+function title() {
+  state = 'title';
+  titleFx.forEach(t => t.remove());
+  const cx = W() / 2, cy = Math.floor(H() / 2);
+  titleFx = [
+    game.fx.text(cx, cy - 4, 'A C I   I N V A D E R S', { center: true, effects: ['rainbow', 'wave'], amp: 1, speed: 4 }),
+    game.fx.text(cx, cy - 1, 'ASCII  ·  100% text  ·  zero images', { center: true, color: '#7a8bb0' }),
+    game.fx.text(cx, cy + 2, 'ARROWS / A D to move   SPACE to fire', { center: true, color: '#cfe', effects: ['typewriter'], cps: 40 }),
+    game.fx.text(cx, cy + 5, '[ press SPACE ]', { center: true, color: '#ffd24a', effects: ['blink'] }),
+    game.fx.text(cx, cy + 8, 'best ' + hi(), { center: true, color: '#556' }),
+  ];
+}
+function clearField() {
+  [ship, ...enemies, ...bullets, ...bombs].forEach(e => e && game.remove(e));
+  ship = null; enemies = []; bullets = []; bombs = []; shields.clear(); game.clearParticles();
+}
+function startWave(first) {
+  titleFx.forEach(t => t.remove()); titleFx = [];
+  if (first) { clearField(); score = 0; lives = 3; wave = 1; }
+  const cols = Math.min(8, Math.floor((W() - 10) / 9)), rows = types.length;
+  enemies.forEach(e => game.remove(e)); enemies = []; bullets.forEach(b => game.remove(b)); bullets = [];
+  bombs.forEach(b => game.remove(b)); bombs = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const e = game.add(types[r], { x: 0, y: 0, label: null, reflect: false });
+    e.gx = c * 9; e.gy = r * 4; e.pts = pts[r]; e.fps = 2 + wave * 0.3; enemies.push(e);
+  }
+  fx = Math.floor((W() - cols * 9) / 2); fy = 3; dir = 1; bombT = 1;
+  if (!ship) { ship = game.add(shipSpr, { x: W() / 2 - 3, y: H() - 5, reflect: false }); }
+  // shields
+  shields.clear();
+  for (let s = 0; s < 4; s++) { const sx = Math.floor(W() * (s + 0.5) / 4) - 4; for (let j = 0; j < 3; j++) for (let i = 0; i < 9; i++) if (!(j === 2 && i > 2 && i < 6)) shields.set((sx + i) + ',' + (H() - 8 + j), 4); }
+  state = 'play'; invuln = 1;
+}
+function kill(e) {
+  e.dead = true; score += e.pts;
+  game.animate(e, 'die', { loop: false, fps: 10, onEnd: x => { game.remove(x); enemies = enemies.filter(q => q !== x); } });
+  game.burst(e.x + e.w / 2, e.y + 1, 'explosion', { count: 18 });
+  game.floatText(e.x + e.w / 2, e.y - 1, '+' + e.pts, { color: '#ffd24a' });
+}
+function hitShip() {
+  if (invuln > 0) return;
+  lives--; invuln = 1.6;
+  game.shake(5, 0.45);
+  game.burst(ship.x + 3, ship.y + 1, 'explosion');
+  const s = ship;
+  game.tween(s, { tintAmt: 1 }, 0.12, { yoyo: true, repeat: 6, onUpdate: () => (s.tint = '#ff5566'), onDone: () => (s.tint = null) });
+  if (lives <= 0) gameOver();
+}
+async function gameOver() {
+  state = 'over';
+  try { if (score > hi()) localStorage.aciInvadersHi = score; } catch (e) {}
+  game.burst(ship.x + 3, ship.y + 1, 'explosion', { count: 60 }); game.remove(ship); ship = null;
+  await game.wait(0.8);
+  await game.transition({ type: 'dissolve', dir: 'out', dur: 0.9 });
+  clearField(); title();
+  await game.transition({ type: 'dissolve', dir: 'in', dur: 0.7 });
+}
+async function waveClear() {
+  state = 'clear'; wave++;
+  game.burst(W() / 2, H() / 3, 'confetti', { count: 90 });
+  const t = game.fx.text(W() / 2, H() / 2 - 2, 'WAVE CLEARED', { center: true, effects: ['rainbow', 'wave'] });
+  await game.wait(1.8); t.remove();
+  startWave(false);
+}
+
+// ---------- loop
+game.onUpdate(dt => {
+  const space = game.key(' '), pressed = startReq; startReq = false;
+  if (state === 'title') { if (pressed) { game.transition({ type: 'iris', dir: 'out', dur: 0.5 }).then(() => { startWave(true); game.transition({ type: 'iris', dir: 'in', dur: 0.6 }); }); state = 'wait'; } return; }
+  if (state !== 'play' && state !== 'clear') return;
+  if (invuln > 0) invuln -= dt;
+  const alive = enemies.filter(e => !e.dead);
+  if (state === 'play' && ship) {
+    const mv = (game.key('ArrowRight', 'd') ? 1 : 0) - (game.key('ArrowLeft', 'a') ? 1 : 0);
+    ship.x = Math.max(1, Math.min(W() - 7, ship.x + mv * 38 * dt));
+    cool -= dt;
+    if (space && cool <= 0) { cool = 0.28; const b = game.add(ACI.sprite('!', { color: '#ffffff' }), { x: ship.x + 3, y: ship.y - 1 }); bullets.push(b); }
+    // formation march — speeds up as it thins out
+    const speed = (4 + wave * 1.5) + (40 - alive.length) * 0.35;
+    fx += dir * speed * dt;
+    const minX = Math.min(...alive.map(e => e.gx)) + fx, maxX = Math.max(...alive.map(e => e.gx)) + fx + 6;
+    if (alive.length && (maxX >= W() - 1 || minX <= 1)) { dir = -dir; fx += dir * 1.5; fy += 2; }
+    enemies.forEach(e => { if (!e.dead) { e.x = fx + e.gx; e.y = fy + e.gy; } });
+    // enemy bombs: bottom-most invader of a random column
+    bombT -= dt;
+    if (bombT <= 0 && alive.length) {
+      bombT = Math.max(0.35, 1.3 - wave * 0.1);
+      const col = alive[Math.floor(Math.random() * alive.length)].gx, low = alive.filter(e => e.gx === col).sort((a, b) => b.gy - a.gy)[0];
+      bombs.push(game.add(ACI.sprite(':', { color: '#ff5566' }), { x: low.x + 2, y: low.y + low.h }));
+    }
+    // bullets
+    for (const b of bullets.slice()) {
+      b.y -= 26 * dt;
+      const sk = Math.round(b.x) + ',' + Math.round(b.y);
+      let used = false;
+      if (shields.has(sk)) { const hp = shields.get(sk) - 1; hp > 0 ? shields.set(sk, hp) : shields.delete(sk); used = true; game.burst(b.x, b.y, 'spark', { count: 3 }); }
+      else for (const e of alive) if (!e.dead && b.x >= e.x && b.x < e.x + e.w && b.y >= e.y && b.y < e.y + e.h) { kill(e); used = true; break; }
+      if (used || b.y < 0) { game.remove(b); bullets.splice(bullets.indexOf(b), 1); }
+    }
+    for (const b of bombs.slice()) {
+      b.y += 13 * dt;
+      const sk = Math.round(b.x) + ',' + Math.round(b.y);
+      let used = false;
+      if (shields.has(sk)) { const hp = shields.get(sk) - 1; hp > 0 ? shields.set(sk, hp) : shields.delete(sk); used = true; game.burst(b.x, b.y, 'dust', { count: 3 }); }
+      else if (b.x >= ship.x && b.x < ship.x + 6 && b.y >= ship.y && b.y < ship.y + 3) { used = true; hitShip(); }
+      if (used || b.y > H()) { game.remove(b); bombs.splice(bombs.indexOf(b), 1); }
+    }
+    if (alive.length && Math.max(...alive.map(e => e.y + e.h)) >= ship.y) { lives = 0; hitShip(); invuln = 0; hitShip(); }
+    if (!alive.length && state === 'play') waveClear();
+  }
+});
+
+game.onDraw(() => {
+  // shields (world cells drawn straight into the grid)
+  for (const [k, hp] of shields) { const [x, y] = k.split(',').map(Number); game.put(x, y, '█▓▒░'[4 - hp], '#4fd07a'); }
+  if (state === 'play' || state === 'clear' || state === 'over') {
+    hud.text(2, 0, 'SCORE ' + String(score).padStart(5, '0'), '#cfe');
+    hud.text(Math.floor(W() / 2) - 4, 0, 'WAVE ' + wave, '#7a8bb0');
+    hud.text(W() - 12, 0, 'LIVES ' + '♥'.repeat(Math.max(0, lives)), '#ff5566');
+  }
+});
+title();
+</script>
+</body></html>

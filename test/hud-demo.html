@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>ACI HUD kit</title>
+<body style="margin:0;background:#000"><div id="screen" style="position:fixed;inset:0"></div>
+<script src="/aci.js"></script><script src="/modules/physics.js"></script><script src="/modules/tilemap.js"></script><script src="/modules/scenes.js"></script><script src="/modules/hud.js"></script>
+<script>
+const game = ACI.game('#screen', { fontSize: 11, background: '#06120a' });
+game.layer((x, y, t) => { const n = game.fbm(x * .18, y * .3 + Math.sin(t * .4 + x * .1) * .15, 4); const c = ['"', "'", ',', '/', '|', '`'][Math.floor(game.hash(x, y, 7) * 6)];
+  return [c, game.mix('#0d3a18', '#4fae5a', n * n * 1.6), game.mix('#04150a', '#0a2a12', n)]; });
+const mk = (art, color) => ACI.sprite(art, { color });
+const hero = game.add(mk(' o \n/|\\\n/ \\', '#f2f2f2'), { x: 28, y: 12, label: 'Senje' });
+const wolf = game.add(mk('/^\\__\n=~~~\'', '#c0553d'), { x: 46, y: 9, label: 'Old Sabatons' });
+const mage = game.add(mk(' ^ \n(o)\n/|\\', '#8ab4ff'), { x: 16, y: 8, label: 'Jade' });
+hero.hp = 1735; wolf.hp = 7; mage.hp = 260;
+game.hud.panel('p1', { anchor: 'tl', x: 1, y: 1, title: 'Senje', rows: [ { label: 'HP', bar: { value: () => hero.hp, max: 3591, color: '#e0e0e0', style: 'ticks' } }, { label: 'MP', bar: { value: 129, max: 129, color: '#e0e0e0', style: 'ticks' } }, { label: 'LV 11', value: '3889g' } ] });
+game.hud.panel('p2', { anchor: 'tl', x: 1, y: 8, title: 'Stasia_apk · 6', rows: [ { label: 'HP', bar: { value: 260, max: 260, color: '#d9d9d9', style: 'ticks' } }, { label: 'MP', bar: { value: 567, max: 567, color: '#d9d9d9', style: 'ticks' } } ] });
+game.hud.panel('p3', { anchor: 'tl', x: 1, y: 13, title: 'Jade · 1', border: 'single', rows: [ { label: 'HP', bar: { value: 786, max: 786, color: '#7ad07a' } }, { label: 'MP', bar: { value: 7, max: 53, color: '#4a90e2' } } ] });
+game.hud.attachTag(hero, { text: 'Senje', color: '#d6f5ff' }); game.hud.attachTag(wolf, { color: '#ffd6a0' }); game.hud.attachTag(mage, { color: '#c8e0ff' });
+game.hud.attachBar(wolf, { value: () => wolf.hp, max: 53, color: '#d1473a', w: 7 });
+game.hud.fps(true);
+game.hud.float(48, 14, '+200', { color: '#9be39b', life: 99, rise: 1 });
+game.hud.float(30, 10, '-37', { color: '#ff8a7a', life: 99, rise: 1, crit: true });
+game.hud.say("He's already showing", { time: 999 });
+window.game = game;
+</script>

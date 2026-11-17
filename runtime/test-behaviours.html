@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>Behaviour tests</title>
+<body style="margin:0;background:#0a0e1a"><div id="screen" style="width:800px;height:400px"></div>
+<script src="../aci.js"></script>
+<script src="../modules/physics.js"></script><script src="../modules/tilemap.js"></script><script src="../modules/scenes.js"></script>
+<script src="../modules/input.js"></script><script src="../modules/sound.js"></script><script src="../modules/save.js"></script>
+<script src="behaviours.js"></script>
+<script>
+window.errors = [];
+const oe = console.error; console.error = (...a) => { window.errors.push(a.join(' ')); oe(...a); };
+ACI.behaviour('Boom', { params: {}, update() { throw new Error('boom'); }, start() { throw new Error('startboom'); } });
+const game = window.game = ACI.game('#screen', { world: { cols: 120, rows: 40 }, cols: 80, rows: 30 });
+game.scene('main', { enter(g) {
+  g.physics.gravity = 40;
+  g.tilemap('\n' + '#'.repeat(120) + '\n', { '#': { color: '#8a6', solid: true } }, { y: 30, setWorld: false });
+} });
+game.goto('main', null, { transition: 'none' });
+const S = s => ACI.sprite(s);
+window.mk = (art, o, list) => { const e = game.add(S(art), o); ACI.attachBehaviours(game, e, list); return e; };
+window.tick = (n, dt = 1 / 30) => { for (let i = 0; i < n; i++) game.step(dt); };
+</script>

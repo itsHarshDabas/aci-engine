@@ -1,0 +1,459 @@
+<title>ACI Asset Editor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: tool rail + drawing grid on the left, frames / preview / AI / export stacked on the right. Single dark look on purpose: it matches the game screen. */
+:root {
+  --night: #070a14; --panel: #0d1222; --line: #1d2640; --ink: #d8def0; --muted: #8490ae;
+  --moon: #e8c870; --water: #5d7fc4; --leaf: #7cc96d; --warn: #e07a6a;
+  --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { background: var(--night); color: var(--ink); }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 32px; max-width: 1400px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+h1 { font: 700 18px var(--mono); margin: 0; } h1 span { color: var(--moon); }
+.sub { margin: 0; color: var(--muted); font-size: 13px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+@media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+section, .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 10px; min-width: 0; }
+h2 { font: 700 12px var(--mono); text-transform: uppercase; letter-spacing: .08em; margin: 0; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.stack { display: grid; gap: 14px; }
+button, .btn { font: 600 12px var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+button.primary { background: var(--moon); color: var(--night); border-color: var(--moon); }
+button[aria-pressed="true"] { background: #1a2340; border-color: var(--moon); color: var(--moon); }
+button:hover { filter: brightness(1.15); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, canvas:focus-visible { outline: 2px solid var(--water); outline-offset: 1px; }
+input[type=text], input[type=number], select, textarea { font: 12px var(--mono); background: var(--night); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+input[type=number] { width: 64px; }
+textarea { width: 100%; min-height: 70px; resize: vertical; }
+label { font-size: 12px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.gridwrap { position: relative; overflow: auto; background: #0a0e1a; border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+#grid { display: block; cursor: crosshair; touch-action: none; }
+.glyphs { display: flex; flex-wrap: wrap; gap: 3px; }
+.glyphs button { font: 14px var(--mono); width: 28px; height: 28px; padding: 0; }
+.swatches { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.swatches button { width: 22px; height: 22px; padding: 0; border-radius: 3px; }
+.swatches button[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+input[type=color] { width: 30px; height: 26px; padding: 1px; background: var(--night); border: 1px solid var(--line); border-radius: 4px; }
+.frames { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.frames button { font: 10px/1 var(--mono); white-space: pre; padding: 4px; min-width: 44px; text-align: left; overflow: hidden; max-height: 70px; }
+#preview { height: 160px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.status { font: 12px var(--mono); color: var(--muted); min-height: 1.4em; }
+.status.ok { color: var(--leaf); } .status.err { color: var(--warn); }
+.file { position: relative; overflow: hidden; display: inline-block; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+pre.json { font: 11px var(--mono); max-height: 140px; overflow: auto; margin: 0; background: var(--night); border: 1px solid var(--line); border-radius: 4px; padding: 8px; white-space: pre; }
+kbd { font: 11px var(--mono); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><span>ACI</span> Asset Editor</h1>
+    <p class="sub">Click a cell and type to write, or drag to paint with the brush character. <kbd>Arrows</kbd> move the cursor, <kbd>Backspace</kbd> erases.</p>
+  </header>
+
+  <div class="main">
+    <div class="stack">
+      <section aria-label="Tools">
+        <div class="row">
+          <label>Name <input type="text" id="name" value="wanderer" size="12"></label>
+          <label>Size <input type="number" id="w" min="1" max="80" value="7"> × <input type="number" id="h" min="1" max="40" value="5"></label>
+          <label>FPS <input type="number" id="fps" min="1" max="30" value="6"></label>
+        </div>
+        <div class="row" role="group" aria-label="Tool">
+          <button data-tool="type" aria-pressed="true">Type</button>
+          <button data-tool="paint" aria-pressed="false">Paint</button>
+          <button data-tool="erase" aria-pressed="false">Erase</button>
+          <button data-tool="fill" aria-pressed="false">Fill</button>
+          <button data-tool="recolor" aria-pressed="false">Recolour</button>
+          <button data-tool="pick" aria-pressed="false">Pick</button>
+          <span style="flex:1"></span>
+          <button id="undo">Undo</button><button id="redo">Redo</button>
+          <button id="flipH" title="Mirror left-right">Mirror</button>
+          <label><input type="checkbox" id="onion" checked> Onion skin</label>
+        </div>
+        <div class="row"><label>Brush <input type="text" id="brush" value="#" maxlength="1" size="2" style="text-align:center"></label><div class="glyphs" id="glyphs" aria-label="Characters"></div></div>
+        <div class="swatches" id="swatches" aria-label="Colours"></div>
+      </section>
+      <div class="gridwrap"><canvas id="grid" tabindex="0" aria-label="Drawing grid"></canvas><input id="typer" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type characters into the grid" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;left:0;top:0"></div>
+      <section aria-label="Frames">
+        <div class="row">
+          <h2>Animation</h2>
+          <select id="anim" aria-label="Animation"></select>
+          <button id="addAnim">New animation</button>
+          <button id="renameAnim">Rename</button>
+          <button id="delAnim">Delete</button>
+        </div>
+        <div class="frames" id="frames"></div>
+        <div class="row">
+          <button id="addFrame">Blank frame</button>
+          <button id="dupFrame">Duplicate frame</button>
+          <button id="delFrame">Delete frame</button>
+          <button id="prevF">◀</button><button id="nextF">▶</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section aria-label="Preview">
+        <h2>Live preview</h2>
+        <div id="preview"></div>
+        <div class="row"><button id="pvWalk" aria-pressed="false">Walk around</button><label><input type="checkbox" id="pvReflect" checked> Reflection</label></div>
+      </section>
+
+      <section aria-label="Generate with AI">
+        <h2>Generate with Claude</h2>
+        <textarea id="aiPrompt" spellcheck="false" aria-label="Describe the asset">a small knight with a red cape, 2-frame walk and 2-frame idle</textarea>
+        <div class="row"><button class="primary" id="aiGo">Generate</button><button id="aiStop" hidden>Stop</button><label><input type="checkbox" id="aiEdit"> Improve current asset instead</label></div>
+        <div class="status" id="aiStatus"></div>
+      </section>
+
+      <section aria-label="Import">
+        <h2>Import</h2>
+        <textarea id="pasteArt" spellcheck="false" placeholder="Paste ASCII art here (one frame), then Use text" aria-label="Paste ASCII art"></textarea>
+        <div class="row">
+          <button id="usePaste">Use text</button>
+          <span class="file"><button type="button">Image or GIF…</button><input type="file" id="imgIn" accept="image/*" aria-label="Import image or GIF"></span>
+          <select id="imgMode" aria-label="Conversion style"><option value="ascii">ascii</option><option value="blocks">blocks</option><option value="braille">braille</option><option value="edges">edges</option></select>
+          <span class="file"><button type="button">.aci.json…</button><input type="file" id="jsonIn" accept=".json,application/json" aria-label="Open asset file"></span>
+        </div>
+      </section>
+
+      <section aria-label="Export">
+        <h2>Export</h2>
+        <div class="row">
+          <button id="copyJson">Copy .aci.json</button>
+          <button id="copyText">Copy as text</button>
+          <button id="download" hidden>Download</button>
+          <button id="saveBridge" hidden>Save to library</button>
+        </div>
+        <pre class="json" id="jsonOut" aria-label="Asset JSON"></pre>
+        <div class="status" id="exStatus"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="aci.js"></script>
+<script src="modules/convert.js"></script>
+<script>
+(async function () {
+  try { await document.fonts.load('14px "JetBrains Mono"'); } catch (e) {}
+  const $ = id => document.getElementById(id);
+  const GLYPHS = "#@%&*+=-~_.,:;'\"`^/\\|()[]{}<>oO0xX$!?vVwWmMnNuUA▀▄█░▒▓·•○●◆▲▼◀▶─│┌┐└┘";
+  const PALETTE = ['#e8e8e8', '#9aa3b5', '#5b6478', '#e8c870', '#f2d7b6', '#d45a4f', '#e89a52', '#a8e07a', '#3f9e50', '#5d7fc4', '#9cb6e8', '#b07a4c', '#c77dd8', '#ffffff'];
+
+  // ---------------------------------------------------------------- model
+  let doc = null, animName = 'idle', fi = 0, tool = 'type', color = '#e8c870';
+  const cursor = { x: 0, y: 0 };
+  const blank = (w, h) => ({ ch: Array.from({ length: h }, () => Array(w).fill(' ')), fg: Array.from({ length: h }, () => Array(w).fill(null)) });
+  const clone = f => ({ ch: f.ch.map(r => r.slice()), fg: f.fg.map(r => r.slice()) });
+  function fromLines(lines, w, h, fgc) { const f = blank(w, h); lines.forEach((l, y) => { for (let x = 0; x < Math.min(w, l.length); x++) if (y < h && l[x] !== ' ') { f.ch[y][x] = l[x]; f.fg[y][x] = fgc; } }); return f; }
+  function starter() {
+    const R = String.raw, p = { h: '#e8c870', f: '#f2d7b6', c: '#d45a4f', b: '#f0e6d0', l: '#8a7a68' };
+    const mk = (art, map) => { const a = art.split('\n'), m = map.split('\n'); const f = blank(7, 5); a.forEach((l, y) => { for (let x = 0; x < l.length; x++) if (l[x] !== ' ') { f.ch[y][x + 1] = l[x]; f.fg[y][x + 1] = p[m[y][x]] || '#e8e8e8'; } }); return f; };
+    const M = ' hhh\n fff\ncbbbc\n ccc\n l l';
+    return { name: 'wanderer', fps: 6, w: 7, h: 5, anims: {
+      idle: [mk(R` ,^,
+ (o)
+/[#]\
+ /_\
+ | |`, M), mk(R` ,^,
+ (-)
+/[#]\
+ /_\
+ | |`, M)],
+      walk: [mk(R` ,^,
+ (o)
+/[#]\
+ /_\
+ / |`, M), mk(R` ,^,
+ (o)
+\[#]/
+ /_\
+ | \ `, M)] } };
+  }
+  const frame = () => doc.anims[animName][fi];
+
+  // undo
+  const undoStack = [], redoStack = [];
+  const snap = () => JSON.stringify({ doc, animName, fi });
+  function pushUndo() { undoStack.push(snap()); if (undoStack.length > 200) undoStack.shift(); redoStack.length = 0; }
+  function restore(s) { const o = JSON.parse(s); doc = o.doc; animName = o.animName; fi = o.fi; syncAll(); }
+  $('undo').onclick = () => { if (!undoStack.length) return; redoStack.push(snap()); restore(undoStack.pop()); };
+  $('redo').onclick = () => { if (!redoStack.length) return; undoStack.push(snap()); restore(redoStack.pop()); };
+
+  // ---------------------------------------------------------------- asset <-> ACI
+  function toSprite() {
+    const anims = {};
+    for (const a in doc.anims) anims[a] = doc.anims[a].map(f => {
+      const cells = [];
+      for (let y = 0; y < doc.h; y++) for (let x = 0; x < doc.w; x++) cells.push({ ch: f.ch[y][x], fg: f.fg[y][x] || '#e8e8e8', bg: null });
+      return { w: doc.w, h: doc.h, cells };
+    });
+    return ACI.sprite(anims, { fps: doc.fps, name: doc.name });
+  }
+  function fromSprite(spr, name) {
+    const w = spr.w, h = spr.h, anims = {};
+    for (const a in spr.anims) anims[a] = spr.anims[a].map(fr => { const f = blank(w, h); for (let y = 0; y < fr.h; y++) for (let x = 0; x < fr.w; x++) { const c = fr.cells[y * fr.w + x]; if (c.ch !== ' ') { f.ch[y][x] = c.ch; f.fg[y][x] = c.fg; } } return f; });
+    return { name: name || spr.name || 'asset', fps: spr.fps || 6, w, h, anims };
+  }
+  const assetJson = () => ACI.toAsset(toSprite(), doc.name);
+
+  // ---------------------------------------------------------------- grid canvas
+  const cv = $('grid'), cx = cv.getContext('2d');
+  let CW = 22, CH = 30;
+  window.addEventListener('resize', () => drawGrid());
+  function drawGrid() {
+    const avail = cv.parentElement.clientWidth - 22;
+    CW = Math.max(12, Math.min(40, Math.floor(avail / doc.w))); CH = Math.round(CW * 1.4);
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = doc.w * CW * dpr; cv.height = doc.h * CH * dpr; cv.style.width = doc.w * CW + 'px'; cv.style.height = doc.h * CH + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.fillStyle = '#0a0e1a'; cx.fillRect(0, 0, doc.w * CW, doc.h * CH);
+    cx.strokeStyle = '#161d33'; cx.lineWidth = 1;
+    for (let x = 0; x <= doc.w; x++) { cx.beginPath(); cx.moveTo(x * CW + .5, 0); cx.lineTo(x * CW + .5, doc.h * CH); cx.stroke(); }
+    for (let y = 0; y <= doc.h; y++) { cx.beginPath(); cx.moveTo(0, y * CH + .5); cx.lineTo(doc.w * CW, y * CH + .5); cx.stroke(); }
+    cx.font = `${Math.round(CH * 0.62)}px "JetBrains Mono", Menlo, monospace`; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    const prev = $('onion').checked && fi > 0 ? doc.anims[animName][fi - 1] : null;
+    const f = frame();
+    for (let y = 0; y < doc.h; y++) for (let x = 0; x < doc.w; x++) {
+      const c = f.ch[y][x];
+      if (c !== ' ') { cx.fillStyle = f.fg[y][x] || '#e8e8e8'; cx.fillText(c, x * CW + CW / 2, y * CH + CH / 2 + 1); }
+      else if (prev && prev.ch[y][x] !== ' ') { cx.globalAlpha = .22; cx.fillStyle = prev.fg[y][x] || '#e8e8e8'; cx.fillText(prev.ch[y][x], x * CW + CW / 2, y * CH + CH / 2 + 1); cx.globalAlpha = 1; }
+    }
+    cx.strokeStyle = '#e8c870'; cx.lineWidth = 2; cx.strokeRect(cursor.x * CW + 1, cursor.y * CH + 1, CW - 2, CH - 2);
+  }
+  function cellAt(ev) { const r = cv.getBoundingClientRect(); return { x: Math.floor((ev.clientX - r.left) / CW), y: Math.floor((ev.clientY - r.top) / CH) }; }
+  const inside = p => p.x >= 0 && p.y >= 0 && p.x < doc.w && p.y < doc.h;
+  function setCell(x, y, c, fgc) { const f = frame(); if (!inside({ x, y })) return; f.ch[y][x] = c; f.fg[y][x] = c === ' ' ? null : fgc; }
+  function flood(x, y) {
+    const f = frame(), target = f.ch[y][x], tc = f.fg[y][x], brush = $('brush').value || '#';
+    if (target === brush && tc === color) return;
+    const q = [[x, y]], seen = new Set();
+    while (q.length) { const [a, b] = q.pop(); const k = a + ',' + b; if (seen.has(k) || !inside({ x: a, y: b }) || f.ch[b][a] !== target) continue; seen.add(k); setCell(a, b, brush, color); q.push([a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]); }
+  }
+  let painting = false;
+  function applyTool(p, first) {
+    if (!inside(p)) return;
+    cursor.x = p.x; cursor.y = p.y;
+    const f = frame();
+    if (tool === 'type') { if (first) { /* just move the cursor */ } }
+    else if (tool === 'paint') setCell(p.x, p.y, $('brush').value || '#', color);
+    else if (tool === 'erase') setCell(p.x, p.y, ' ');
+    else if (tool === 'recolor') { if (f.ch[p.y][p.x] !== ' ') f.fg[p.y][p.x] = color; }
+    else if (tool === 'fill' && first) flood(p.x, p.y);
+    else if (tool === 'pick' && first) { if (f.ch[p.y][p.x] !== ' ') { $('brush').value = f.ch[p.y][p.x]; setColor(f.fg[p.y][p.x]); } setTool('paint'); }
+    changed(false);
+  }
+  // on touch screens, focus a hidden input so the phone keyboard opens for the Type tool
+  const typer = $('typer'), coarse = matchMedia('(pointer: coarse)').matches;
+  typer.addEventListener('input', () => { const v = typer.value; typer.value = ''; if (!v) return; pushUndo(); for (const c of v) { setCell(cursor.x, cursor.y, c, color); if (cursor.x < doc.w - 1) cursor.x++; } changed(true); });
+  cv.addEventListener('pointerdown', ev => { if (coarse && tool === 'type') typer.focus({ preventScroll: true }); else cv.focus(); if (tool !== 'type' && tool !== 'pick') pushUndo(); painting = true; cv.setPointerCapture(ev.pointerId); applyTool(cellAt(ev), true); });
+  cv.addEventListener('pointermove', ev => { if (painting && tool !== 'fill' && tool !== 'pick' && tool !== 'type') applyTool(cellAt(ev), false); });
+  cv.addEventListener('pointerup', () => { painting = false; changed(true); });
+  const onGridKey = ev => {
+    const k = ev.key;
+    if ((ev.ctrlKey || ev.metaKey) && k.toLowerCase() === 'z') { ev.preventDefault(); (ev.shiftKey ? $('redo') : $('undo')).click(); return; }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const mv = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[k];
+    if (mv) { ev.preventDefault(); cursor.x = Math.max(0, Math.min(doc.w - 1, cursor.x + mv[0])); cursor.y = Math.max(0, Math.min(doc.h - 1, cursor.y + mv[1])); drawGrid(); return; }
+    if (k === 'Backspace') { ev.preventDefault(); pushUndo(); cursor.x = Math.max(0, cursor.x - 1); setCell(cursor.x, cursor.y, ' '); changed(true); return; }
+    if (k === 'Delete') { ev.preventDefault(); pushUndo(); setCell(cursor.x, cursor.y, ' '); changed(true); return; }
+    if (k === 'Enter') { ev.preventDefault(); cursor.x = 0; cursor.y = Math.min(doc.h - 1, cursor.y + 1); drawGrid(); return; }
+    if (k.length === 1 && ev.target !== typer) { ev.preventDefault(); pushUndo(); setCell(cursor.x, cursor.y, k, color); if (cursor.x < doc.w - 1) cursor.x++; changed(true); }
+  };
+  cv.addEventListener('keydown', onGridKey);
+  typer.addEventListener('keydown', onGridKey);
+
+  // ---------------------------------------------------------------- toolbar
+  function setTool(t) { tool = t; document.querySelectorAll('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === t))); }
+  document.querySelectorAll('[data-tool]').forEach(b => (b.onclick = () => setTool(b.dataset.tool)));
+  const glyphBox = $('glyphs');
+  [...GLYPHS].forEach(g => { const b = document.createElement('button'); b.textContent = g; b.title = 'Brush ' + g; b.onclick = () => { $('brush').value = g; if (tool === 'type' || tool === 'erase' || tool === 'pick') setTool('paint'); }; glyphBox.append(b); });
+  const sw = $('swatches');
+  function setColor(c) { color = c; picker.value = c; sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c === c))); }
+  PALETTE.forEach(c => { const b = document.createElement('button'); b.style.background = c; b.dataset.c = c; b.title = c; b.setAttribute('aria-label', 'Colour ' + c); b.onclick = () => setColor(c); sw.append(b); });
+  const picker = document.createElement('input'); picker.type = 'color'; picker.setAttribute('aria-label', 'Custom colour'); picker.oninput = () => setColor(picker.value); sw.append(picker);
+  setColor(color);
+  $('onion').onchange = drawGrid;
+  $('flipH').onclick = () => {
+    pushUndo(); const FH = ACI.FLIP_H;
+    for (const a in doc.anims) doc.anims[a] = doc.anims[a].map(f => ({ ch: f.ch.map(r => r.slice().reverse().map(c => FH[c] || c)), fg: f.fg.map(r => r.slice().reverse()) }));
+    changed(true);
+  };
+  function resizeDoc(w, h) {
+    w = Math.max(1, Math.min(80, w | 0)); h = Math.max(1, Math.min(40, h | 0));
+    for (const a in doc.anims) doc.anims[a] = doc.anims[a].map(f => { const n = blank(w, h); for (let y = 0; y < Math.min(h, doc.h); y++) for (let x = 0; x < Math.min(w, doc.w); x++) { n.ch[y][x] = f.ch[y][x]; n.fg[y][x] = f.fg[y][x]; } return n; });
+    doc.w = w; doc.h = h; cursor.x = Math.min(cursor.x, w - 1); cursor.y = Math.min(cursor.y, h - 1);
+  }
+  $('w').onchange = $('h').onchange = () => { pushUndo(); resizeDoc(+$('w').value, +$('h').value); changed(true); };
+  $('fps').onchange = () => { doc.fps = Math.max(1, Math.min(30, +$('fps').value || 6)); changed(true); };
+  $('name').onchange = () => { doc.name = $('name').value.trim().replace(/[^\w.-]+/g, '-') || 'asset'; $('name').value = doc.name; changed(true); };
+
+  // ---------------------------------------------------------------- animations / frames
+  function syncAnims() {
+    const s = $('anim'); s.innerHTML = '';
+    Object.keys(doc.anims).forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = `${a} (${doc.anims[a].length})`; s.append(o); });
+    s.value = animName;
+  }
+  function syncFrames() {
+    const box = $('frames'); box.innerHTML = '';
+    doc.anims[animName].forEach((f, i) => {
+      const b = document.createElement('button'); b.textContent = f.ch.slice(0, 6).map(r => r.join('').slice(0, 9)).join('\n'); b.setAttribute('aria-pressed', String(i === fi)); b.setAttribute('aria-label', 'Frame ' + (i + 1));
+      b.onclick = () => { fi = i; syncFrames(); drawGrid(); }; box.append(b);
+    });
+  }
+  $('anim').onchange = () => { animName = $('anim').value; fi = 0; syncFrames(); drawGrid(); preview.refresh(); };
+  $('addAnim').onclick = () => { pushUndo(); let n = 'anim', k = 1; while (doc.anims[n + k]) k++; doc.anims[n + k] = [clone(frame())]; animName = n + k; fi = 0; changed(true); };
+  $('renameAnim').onclick = () => {
+    const box = document.createElement('input'); box.type = 'text'; box.value = animName; box.size = 10; box.setAttribute('aria-label', 'New animation name');
+    const sel = $('anim'); sel.replaceWith(box); box.focus(); box.select();
+    const done = () => { const n = box.value.trim().replace(/[^\w-]+/g, '') || animName; box.replaceWith(sel); if (n !== animName && !doc.anims[n]) { pushUndo(); const o = {}; for (const a in doc.anims) o[a === animName ? n : a] = doc.anims[a]; doc.anims = o; animName = n; } changed(true); };
+    box.onblur = done; box.onkeydown = e => { if (e.key === 'Enter') box.blur(); };
+  };
+  $('delAnim').onclick = () => { if (Object.keys(doc.anims).length < 2) return status('ex', 'An asset needs at least one animation.', 'err'); pushUndo(); delete doc.anims[animName]; animName = Object.keys(doc.anims)[0]; fi = 0; changed(true); };
+  $('addFrame').onclick = () => { pushUndo(); doc.anims[animName].splice(fi + 1, 0, blank(doc.w, doc.h)); fi++; changed(true); };
+  $('dupFrame').onclick = () => { pushUndo(); doc.anims[animName].splice(fi + 1, 0, clone(frame())); fi++; changed(true); };
+  $('delFrame').onclick = () => { if (doc.anims[animName].length < 2) return; pushUndo(); doc.anims[animName].splice(fi, 1); fi = Math.max(0, fi - 1); changed(true); };
+  $('prevF').onclick = () => { fi = (fi - 1 + doc.anims[animName].length) % doc.anims[animName].length; syncFrames(); drawGrid(); };
+  $('nextF').onclick = () => { fi = (fi + 1) % doc.anims[animName].length; syncFrames(); drawGrid(); };
+
+  // ---------------------------------------------------------------- live preview (a tiny ACI game)
+  const preview = (() => {
+    const g = ACI.game('#preview', { fontSize: 12, background: '#0a130f' });
+    const water = (x, y) => y >= g.rows - 3;
+    g.mask('water', water).reflect('water', { tint: '#14214a', amount: .5 });
+    g.on('resize', () => g.mask('water', water));
+    g.layer((x, y, t) => {
+      if (g.is('water', x, y)) { const w = Math.sin(x * .4 - t * 1.2 + y); return [w > .6 ? '~' : w > 0 ? '-' : ' ', ACI.mix('#16213f', '#4a68aa', (w + 1) / 2), '#0b1128']; }
+      const h = ACI.hash(x, y), wind = Math.sin(x * .2 - t * 1.6) + (h - .5);
+      return [wind > .5 ? '/' : wind < -.5 ? '\\' : (h < .3 ? '.' : '|'), ACI.mix('#12351c', '#3f7a3c', h * .7), '#0a130f'];
+    });
+    let e = null, walking = false, dir = 1;
+    g.onUpdate(dt => {
+      if (!e) return;
+      e.reflect = $('pvReflect').checked;
+      e.y = g.rows - 3 - e.h;
+      if (walking) { e.x += dir * 8 * dt; if (e.x > g.cols - e.w - 1) dir = -1; if (e.x < 1) dir = 1; e.flipX = dir < 0; e.play(doc.anims.walk ? 'walk' : animName); }
+      else { e.x = Math.round(g.cols / 2 - e.w / 2); e.play(animName); }
+    });
+    return { g, refresh() { const spr = toSprite(); if (!e) e = g.add(spr, { reflect: true, label: doc.name }); else { e.setSprite(spr); e.label = doc.name; } e.play(animName); }, toggleWalk() { walking = !walking; $('pvWalk').setAttribute('aria-pressed', String(walking)); } };
+  })();
+  $('pvWalk').onclick = () => preview.toggleWalk();
+
+  // ---------------------------------------------------------------- sync + persistence
+  let saveTimer = null;
+  function changed(full) {
+    drawGrid();
+    if (full) { syncAnims(); syncFrames(); preview.refresh(); }
+    clearTimeout(saveTimer); saveTimer = setTimeout(() => {
+      if (!full) { syncFrames(); preview.refresh(); }
+      $('jsonOut').textContent = JSON.stringify(assetJson());
+      try { localStorage.setItem('aci-editor-doc', JSON.stringify(doc)); } catch (e) {}
+    }, 150);
+  }
+  const saveNow = () => { try { localStorage.setItem('aci-editor-doc', JSON.stringify(doc)); } catch (e) {} };
+  window.addEventListener('pagehide', saveNow);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveNow(); });
+  function syncAll() { $('name').value = doc.name; $('w').value = doc.w; $('h').value = doc.h; $('fps').value = doc.fps; if (!doc.anims[animName]) animName = Object.keys(doc.anims)[0]; fi = Math.min(fi, doc.anims[animName].length - 1); changed(true); }
+  function load(d) { pushUndo(); doc = d; animName = Object.keys(doc.anims)[0]; fi = 0; cursor.x = cursor.y = 0; syncAll(); }
+
+  try { const s = localStorage.getItem('aci-editor-doc'); if (s) { const d = JSON.parse(s); if (d && d.anims && d.w) doc = d; } } catch (e) {}
+  if (!doc) doc = starter();
+  animName = Object.keys(doc.anims)[0];
+  syncAll();
+
+  // ---------------------------------------------------------------- import / export
+  function status(which, msg, cls = '') { const el = $(which === 'ai' ? 'aiStatus' : 'exStatus'); el.textContent = msg; el.className = 'status ' + cls; }
+  $('usePaste').onclick = () => {
+    const lines = ACI.parseArt($('pasteArt').value); if (!lines.length) return;
+    const w = Math.max(...lines.map(l => l.length)), h = lines.length;
+    load({ name: doc.name, fps: doc.fps, w, h, anims: { default: [fromLines(lines, w, h, color)] } });
+  };
+  $('imgIn').onchange = async ev => {
+    const file = ev.target.files[0]; if (!file) return;
+    const cols = Math.min(60, Math.max(8, doc.w > 20 ? doc.w : 32)), mode = $('imgMode').value;
+    const name = file.name.replace(/\.\w+$/, '').replace(/[^\w-]+/g, '-');
+    try {
+      let spr;
+      if (ACI.convert && ACI.convert.load) spr = await ACI.convert.load(file, mode === 'ascii' ? { cols } : { cols, mode });
+      else spr = ACI.fromImage(await ACI.loadImage(URL.createObjectURL(file)), { cols });
+      load(fromSprite(spr, name));
+      const n = Object.values(spr.anims)[0].length;
+      status('ex', `Imported ${file.name}${n > 1 ? ' as ' + n + ' animation frames' : ''}. Clean it up with Erase and Recolour.`, 'ok');
+    } catch (e) { status('ex', 'That file could not be converted: ' + (e.message || e), 'err'); }
+    ev.target.value = '';
+  };
+  $('jsonIn').onchange = async ev => {
+    const file = ev.target.files[0]; if (!file) return;
+    try { load(fromSprite(ACI.fromAsset(await file.text()), file.name.replace(/\.aci\.json$|\.json$/, ''))); status('ex', 'Opened ' + file.name, 'ok'); }
+    catch (e) { status('ex', 'Not an ACI asset file: ' + e.message, 'err'); }
+  };
+  async function copy(text, label) {
+    try { await navigator.clipboard.writeText(text); status('ex', label + ' copied.', 'ok'); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($('jsonOut')); getSelection().removeAllRanges(); getSelection().addRange(r); status('ex', 'Copy was blocked here, so the JSON is selected. Press Ctrl+C.', 'err'); }
+  }
+  $('copyJson').onclick = () => copy(JSON.stringify(assetJson(), null, 1), '.aci.json');
+  $('copyText').onclick = () => copy(Object.keys(doc.anims).map(a => doc.anims[a].map((f, i) => `${a} ${i + 1}\n` + f.ch.map(r => r.join('').replace(/\s+$/, '')).join('\n')).join('\n\n')).join('\n\n'), 'Text');
+
+  // running from the bridge server? then offer the shared asset library
+  fetch('/api/assets', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(list => {
+    if (!Array.isArray(list)) return;
+    $('saveBridge').hidden = false;
+    $('saveBridge').onclick = async () => {
+      const r = await fetch('/api/assets/' + encodeURIComponent(doc.name), { method: 'PUT', headers: { 'content-type': 'application/json', 'x-aci-agent': 'editor' }, body: JSON.stringify(assetJson()) }).then(r => r.json()).catch(e => ({ ok: false, error: e.message }));
+      status('ex', r.ok ? `Saved "${doc.name}" to the library. Agents can spawn it with {"asset": "${doc.name}"}.` : 'Could not save: ' + r.error, r.ok ? 'ok' : 'err');
+    };
+  }).catch(() => {});
+
+  // ---------------------------------------------------------------- Claude: downloads + generation (inside claude.ai)
+  const cl = window.claude;
+  if (cl && cl.use) {
+    cl.use('downloads').then(dl => {
+      if (!dl) return;
+      $('download').hidden = false;
+      $('download').onclick = async () => { try { await dl.save({ filename: doc.name + '.aci.json', data: JSON.stringify(assetJson(), null, 1) }); status('ex', 'Saved ' + doc.name + '.aci.json', 'ok'); } catch (e) { status('ex', e && e.code === 'cancelled' ? '' : 'Download did not happen.', ''); } };
+    });
+  }
+  let sample = null, ctl = null;
+  const aiSection = $('aiGo').closest('section');
+  if (cl && cl.use) cl.use('sample').then(s => { sample = s; if (!s) aiSection.hidden = true; }); else aiSection.hidden = true;
+
+  const AI_RULES = `You draw game sprites for an ASCII game engine. Every cell is one monospace character. Characters are ~0.55 as wide as they are tall, so make shapes wider than you'd think.
+Reply with ONLY a JSON object of this shape:
+{"name": "short-kebab-name", "fps": 6, "width": W, "height": H,
+ "palette": {"a": "#hex", "b": "#hex"},
+ "anims": {"idle": [{"text": ["row1", "row2"], "colors": ["row1", "row2"]}], "walk": [...]}}
+Rules: every frame has exactly H rows, each padded with spaces to exactly W characters. "colors" has the same shape as "text"; each character is a palette key (or a space where text is a space). Spaces are transparent. Use 3-8 palette colours that read well on a dark green background. Keep it between 3x2 and 24x12 unless asked. Animations: make consecutive frames differ slightly (legs, arms, flicker) so motion is visible. Use plain ASCII and these extras only: ░▒▓█▀▄·•○●◆▲▼◀▶.`;
+  $('aiStop').onclick = () => ctl && ctl.abort();
+  $('aiGo').onclick = async () => {
+    if (!sample) return;
+    const want = $('aiPrompt').value.trim(); if (!want) return status('ai', 'Describe what to draw first.', 'err');
+    let prompt = AI_RULES + '\n\nDraw: ' + want;
+    if ($('aiEdit').checked) prompt += '\n\nImprove or extend this existing asset (keep its style unless asked):\n' + JSON.stringify(assetJson());
+    ctl = new AbortController();
+    $('aiGo').disabled = true; $('aiStop').hidden = false; status('ai', 'Thinking...');
+    try {
+      const r = await sample.json(prompt, { signal: ctl.signal, cache: false, onText: ({ text }) => status('ai', 'Drawing... ' + text.length + ' characters so far') });
+      if (!r || !r.anims) throw { code: 'shape', message: 'no anims in the reply' };
+      const asset = { aci: 1, name: (r.name || 'ai-asset').replace(/[^\w-]+/g, '-'), fps: r.fps || 6, palette: r.palette || {}, anims: {} };
+      for (const a in r.anims) asset.anims[a] = [].concat(r.anims[a]).map(f => ({ text: [].concat(f.text || f).map(String), colors: f.colors ? [].concat(f.colors).map(String) : undefined }));
+      load(fromSprite(ACI.fromAsset(asset), asset.name));
+      status('ai', `Drew "${asset.name}" with ${Object.keys(asset.anims).map(a => a + ' (' + asset.anims[a].length + ')').join(', ')}. Undo goes back.`, 'ok');
+    } catch (e) {
+      const msg = { cancelled: '', not_granted: 'Claude is turned off for this page, so generation is hidden.', rate_limited: 'Too many requests just now. Try again in a minute.', invalid_json: 'Claude replied in a shape I could not read. Try again or simplify the request.', refused: 'Claude declined that request. Try describing it differently.' }[e && e.code];
+      status('ai', msg ?? ('Generation failed: ' + (e && e.message || 'unknown error')), 'err');
+      if (e && e.code === 'not_granted') aiSection.hidden = true;
+    } finally { $('aiGo').disabled = false; $('aiStop').hidden = true; }
+  };
+  window.editor = { get doc() { return doc; }, load, assetJson };
+})();
+</script>
