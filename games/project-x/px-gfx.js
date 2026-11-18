@@ -34,8 +34,8 @@ void main(){
   float lv = l;
   if (uMode > .5) { lv = clamp((pow(l, .75) - .5) * 1.5 + .5 + (hash(cell + floor(uTime * 12.)) - .5) * uGrain, 0., 1.); lv = floor(lv * uLevels + .5) / uLevels; }
   float bt = hash(cell * 1.37 + floor(uTime * 2.) * .01);
-  float idx = floor(pow(clamp(lv, 0., 1.), uGamma) * (uN - 1.) + bt * .85);
-  if (mag > .13 && l > .03) {
+  float idx = floor(pow(clamp(lv, 0., 1.), uGamma) * (uN - 1.) + bt * .6);
+  if (mag > .3 && l > .1) {
     float ax = abs(g.x), ay = abs(g.y);
     idx = ax > 2. * ay ? uEdge.x : (ay > 2. * ax ? uEdge.y : (g.x * g.y < 0. ? uEdge.z : uEdge.w));
     idx = max(idx, floor(pow(clamp(lv, 0., 1.), uGamma) * (uN - 1.) * .55));

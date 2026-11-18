@@ -15,17 +15,19 @@
     for (let y = 0; y < rows; y++) for (let xx = 0; xx < cols; xx++) {
       const c = m.ground[y][xx], [a, b] = GC[c] || ['#000', '#000'], px = xx * S, py = y * S;
       x.fillStyle = a; x.fillRect(px, py, S, S);
-      for (let i = 0; i < 26; i++) { const h = P.hash(xx * 31 + i, y * 17 + i, 5); x.fillStyle = P.hash(xx + i, y, 9) > .5 ? b : a; x.globalAlpha = .55; x.fillRect(px + P.hash(xx, y + i, 3) * S, py + P.hash(xx + i, y, 4) * S, 2 + h * 4, 2 + h * 3); }
+      for (let i = 0; i < 26; i++) { const h = P.hash(xx * 31 + i, y * 17 + i, 5); x.fillStyle = P.hash(xx + i, y, 9) > .5 ? b : a; x.globalAlpha = .22; x.fillRect(px + P.hash(xx, y + i, 3) * S, py + P.hash(xx + i, y, 4) * S, 2 + h * 4, 2 + h * 3); }
       x.globalAlpha = 1;
       if (c === 'l') { if (xx % 2 === 0) { x.fillStyle = b; x.fillRect(px + 2, py + S / 2 - 1, S - 4, 3); } }
       if (c === 'v') { if (y % 2 === 0) { x.fillStyle = b; x.fillRect(px + S / 2 - 1, py + 2, 3, S - 4); } }
       if (c === '=') for (let i = 0; i < 4; i++) { x.fillStyle = b; x.fillRect(px + 2 + i * 6, py, 3, S); }
       if (c === '!') for (let i = 0; i < 4; i++) { x.fillStyle = b; x.fillRect(px, py + 2 + i * 6, S, 3); }
-      if (c === 's' || c === 'p' || c === 't') { x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 1; x.strokeRect(px + .5, py + .5, S - 1, S - 1); }
+      if (c === 's' || c === 'p' || c === 't') { x.strokeStyle = 'rgba(0,0,0,.1)'; x.lineWidth = 1; x.strokeRect(px + .5, py + .5, S - 1, S - 1); }
       if (c === 'k') { x.strokeStyle = 'rgba(0,0,0,.4)'; for (let r = 0; r < 4; r++) { x.beginPath(); x.moveTo(px, py + r * 6); x.lineTo(px + S, py + r * 6); x.stroke(); } }
       if (c === 'b') { x.strokeStyle = 'rgba(0,0,0,.4)'; for (let r = 0; r < 5; r++) { x.beginPath(); x.moveTo(px + r * 5, py); x.lineTo(px + r * 5, py + S); x.stroke(); } }
       if (c === 'f') { x.fillStyle = '#9aa2b4'; x.fillRect(px + S / 2 - 1, py, 3, S); }
     }
+    for (let i = 0; i < cols * rows * 1.2; i++) { const bx = P.hash(i, 1, 77) * cols * S, by = P.hash(i, 2, 77) * rows * S, r = 18 + P.hash(i, 3, 77) * 50, ci = ((by / S) | 0) * 0 + Math.min(rows - 1, (by / S) | 0), cj = Math.min(cols - 1, (bx / S) | 0), cc = m.ground[ci][cj];
+      if (cc !== 'g' && cc !== 'G' && cc !== 'd') continue; const gr = x.createRadialGradient(bx, by, 0, bx, by, r); const light = P.hash(i, 4, 77) > .5; gr.addColorStop(0, light ? 'rgba(120,190,80,.35)' : 'rgba(10,40,20,.4)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.fillRect(bx - r, by - r, r * 2, r * 2); }
     const t = G.tex(cv); t.anisotropy = 8; return t;
   }
 
@@ -44,9 +46,9 @@
     // far plane so the camera never sees the void
     const far = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: 0x14241a, roughness: 1 })); far.rotation.x = -Math.PI / 2; far.position.set(A.cols * T / 2, -.05, A.rows * T / 2); sc.add(far);
     // grass strokes (thin blades, tilted, many per tile) on grass tiles
-    const blades = []; for (let y = 0; y < A.rows; y++) for (let x = 0; x < A.cols; x++) { const c = m.ground[y][x]; if (c === 'g' || c === 'G') for (let i = 0; i < 16; i++) blades.push([x + P.hash(x, y, i), y + P.hash(x, y, i + 40), c === 'G']); }
-    if (blades.length) { const geo = new THREE.BoxGeometry(.05, .5, .05); geo.translate(0, .25, 0); const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }); const im = new THREE.InstancedMesh(geo, mat, blades.length), mx = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), cc = new THREE.Color();
-      blades.forEach(([bx, by, dark], i) => { e.set((P.hash(bx * 9, by * 9, 1) - .5) * .9, P.hash(bx * 7, by * 7, 2) * 6.28, (P.hash(bx * 5, by * 5, 3) - .5) * .9); q.setFromEuler(e); mx.compose(new THREE.Vector3(bx * T, 0, by * T), q, new THREE.Vector3(1, .6 + P.hash(bx, by, 4) * .9, 1)); im.setMatrixAt(i, mx); const k = P.hash(bx, by, 6); cc.setRGB((dark ? .1 : .16) + k * .1, (dark ? .36 : .5) + k * .3, (dark ? .16 : .22) + k * .12); im.setColorAt(i, cc); });
+    const blades = []; for (let y = 0; y < A.rows; y++) for (let x = 0; x < A.cols; x++) { const c = m.ground[y][x]; if (c === 'g' || c === 'G') for (let i = 0; i < 28; i++) blades.push([x + P.hash(x, y, i), y + P.hash(x, y, i + 40), c === 'G']); }
+    if (blades.length) { const geo = new THREE.BoxGeometry(.075, .8, .04); geo.translate(0, .4, 0); const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }); const im = new THREE.InstancedMesh(geo, mat, blades.length), mx = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), cc = new THREE.Color();
+      blades.forEach(([bx, by, dark], i) => { e.set((P.hash(bx * 9, by * 9, 1) - .5) * .9, P.hash(bx * 7, by * 7, 2) * 6.28, (P.hash(bx * 5, by * 5, 3) - .5) * .9); q.setFromEuler(e); mx.compose(new THREE.Vector3(bx * T, 0, by * T), q, new THREE.Vector3(1, .6 + P.hash(bx, by, 4) * .9, 1)); im.setMatrixAt(i, mx); const k = P.hash(bx, by, 6); cc.setRGB((dark ? .08 : .22) + k * .16, (dark ? .42 : .7) + k * .3, (dark ? .16 : .2) + k * .1); im.setColorAt(i, cc); });
       im.castShadow = false; im.receiveShadow = true; sc.add(im); W3.grass = im; }
     // props
     A.lights = [];
@@ -81,7 +83,9 @@
       const front = new THREE.MeshStandardMaterial({ map: tex, roughness: .9, emissive: new THREE.Color(0xffffff), emissiveMap: tex, emissiveIntensity: .0 }); W3.facades = W3.facades || []; W3.facades.push(front);
       const side = new THREE.MeshStandardMaterial({ color: col(b.wall).multiplyScalar(.75), roughness: 1 }), roof = new THREE.MeshStandardMaterial({ color: col(b.roof), roughness: .8 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(w, bh, depth), [side, side, roof, side, front, side]); box.position.set(cx, bh / 2, bz - depth / 2); box.castShadow = true; box.receiveShadow = true; sc.add(box);
-      const ridge = new THREE.Mesh(new THREE.BoxGeometry(w + .3, .35, depth + .3), roof); ridge.position.set(cx, bh + .1, bz - depth / 2); ridge.castShadow = true; sc.add(ridge);
+      const shp = new THREE.Shape(); shp.moveTo(-(depth / 2 + .25), 0); shp.lineTo(depth / 2 + .25, 0); shp.lineTo(0, 1.1); shp.lineTo(-(depth / 2 + .25), 0);
+      const rg = new THREE.ExtrudeGeometry(shp, { depth: w + .5, bevelEnabled: false }); rg.rotateY(Math.PI / 2); rg.translate(-(w + .5) / 2, 0, 0);
+      const ridge = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ color: col(b.roof), roughness: .85 })); ridge.position.set(cx, bh, bz - depth / 2); ridge.castShadow = true; ridge.receiveShadow = true; sc.add(ridge);
       return; }
     // small prop: painted billboard, standing, with a little depth
     const cv = P.propCanvas(kind, info, 64), tex = G.tex(cv), mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, alphaTest: .35, roughness: 1, side: THREE.DoubleSide });
