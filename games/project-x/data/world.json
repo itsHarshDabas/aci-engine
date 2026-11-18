@@ -1,0 +1,62 @@
+{
+  "_doc": "The city of Dwell, from the hand-drawn map. `at` = [x, y, w, h] in the diagram's own pixel units (used by the in-game world map). size = tiles. Links join two areas edge to edge: a_pos/b_pos = first tile of the 3-tile opening along that edge. kind 'water' links are the dashed routes (locked for now).",
+  "name": "City of Dwell",
+  "title_at": [340, 0, 160, 40],
+
+  "districts": {
+    "northern":     {"name": "Northern Dwell",     "at": [240, 80, 160, 40]},
+    "trainstation": {"name": "Town Trainstation",  "at": [160, 280, 120, 40]},
+    "eastern":      {"name": "Eastern Dwell",      "at": [360, 280, 120, 40]},
+    "western":      {"name": "Western Dwell",      "at": [440, 480, 120, 40]},
+    "southern":     {"name": "Southern Dwell",     "at": [600, 680, 160, 40]}
+  },
+
+  "areas": {
+    "home":             {"name": "Home",            "district": "northern",     "at": [160, 140, 120, 80],
+                         "labels": ["HOME"], "rooms": ["bedroom", "kitchen"]},
+    "street":           {"name": "Street",          "district": "northern",     "at": [360, 140, 120, 80],
+                         "labels": ["STREET"], "size": [64, 20]},
+    "crossing":         {"name": "Crossing",        "district": "northern",     "at": [560, 140, 120, 80],
+                         "labels": ["CROSSING"], "size": [48, 24]},
+    "mall":             {"name": "Mall",            "district": "northern",     "at": [760, 140, 120, 80],
+                         "labels": ["MALL"], "size": [48, 22]},
+    "train_station":    {"name": "Train Station",   "district": "trainstation", "at": [160, 340, 120, 80],
+                         "labels": ["TRAIN STATION", "ABANDONED WAREHOUSE"], "size": [60, 26]},
+    "eastern_block":    {"name": "Hospital & Bar",  "district": "eastern",      "at": [360, 340, 120, 80],
+                         "labels": ["HOSPITAL", "BAR", "BACK ALLEY"], "size": [60, 24]},
+    "town_center":      {"name": "Town Center",     "district": "eastern",      "at": [560, 340, 120, 80],
+                         "labels": ["TOWN CENTER", "CENTRAL DWELL"], "size": [56, 30]},
+    "harbour":          {"name": "Harbour",         "district": "trainstation", "at": [160, 500, 120, 80],
+                         "labels": ["HARBOUR"], "size": [56, 28]},
+    "school_ground":    {"name": "School Ground",   "district": "western",      "at": [480, 540, 120, 80],
+                         "labels": ["DWELL PUBLIC", "RECIDENCY", "SCHOOL GROUND"], "size": [56, 26]},
+    "public_school":    {"name": "Public School",   "district": "western",      "at": [640, 540, 120, 80],
+                         "labels": ["DWELL PUBLIC", "SCHOOL"], "size": [56, 26]},
+    "carnival":         {"name": "Carnival",        "district": "southern",     "at": [280, 740, 160, 80],
+                         "labels": ["CARNIVAL"], "size": [56, 28]},
+    "cafe_riverbank":   {"name": "Cafe & Riverbank","district": "southern",     "at": [480, 780, 120, 80],
+                         "labels": ["CAFE", "RIVERBANK", "RIVER"], "size": [56, 26]},
+    "police_old_house": {"name": "Police & Old House","district": "southern",   "at": [720, 740, 160, 80],
+                         "labels": ["POLICE STATION", "OLD HOUSE"], "size": [60, 26]}
+  },
+
+  "links": [
+    {"a": "street", "a_side": "east", "a_pos": 9, "b": "crossing", "b_side": "west", "b_pos": 9},
+    {"a": "crossing", "a_side": "east", "a_pos": 9, "b": "mall", "b_side": "west", "b_pos": 9},
+    {"a": "crossing", "a_side": "south", "a_pos": 22, "b": "town_center", "b_side": "north", "b_pos": 26},
+    {"a": "train_station", "a_side": "east", "a_pos": 15, "b": "eastern_block", "b_side": "west", "b_pos": 13},
+    {"a": "eastern_block", "a_side": "east", "a_pos": 13, "b": "town_center", "b_side": "west", "b_pos": 13},
+    {"a": "train_station", "a_side": "south", "a_pos": 28, "b": "harbour", "b_side": "north", "b_pos": 27},
+    {"a": "town_center", "a_side": "south", "a_pos": 12, "b": "school_ground", "b_side": "north", "b_pos": 26},
+    {"a": "town_center", "a_side": "south", "a_pos": 40, "b": "public_school", "b_side": "north", "b_pos": 26},
+    {"a": "school_ground", "a_side": "east", "a_pos": 13, "b": "public_school", "b_side": "west", "b_pos": 13},
+    {"a": "school_ground", "a_side": "west", "a_pos": 12, "b": "carnival", "b_side": "east", "b_pos": 12},
+    {"a": "school_ground", "a_side": "south", "a_pos": 26, "b": "cafe_riverbank", "b_side": "north", "b_pos": 26},
+    {"a": "town_center", "a_side": "east", "a_pos": 13, "b": "police_old_house", "b_side": "west", "b_pos": 13}
+  ],
+
+  "water_links": [
+    {"a": "harbour", "b": "cafe_riverbank", "label": "the river", "locked": "A wide dark river. You would need a boat."},
+    {"a": "harbour", "b": "outside", "label": "the open sea", "locked": "Open sea beyond the breakwater. You would need a ship."}
+  ]
+}

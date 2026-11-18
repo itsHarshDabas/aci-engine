@@ -1,0 +1,21 @@
+{
+  "bandage":        {"name": "Bandage",          "type": "consumable", "desc": "Restores 30 HP.", "use": {"hp": 30}},
+  "coffee":         {"name": "Canned Coffee",    "type": "consumable", "desc": "Restores 15 RE.", "use": {"re": 15}},
+  "rice_ball":      {"name": "Rice Ball",        "type": "consumable", "desc": "Grandma's cooking. Restores 20 HP.", "use": {"hp": 20}},
+  "omelette":       {"name": "Omelette",         "type": "consumable", "desc": "Soft and hot. Restores 40 HP.", "use": {"hp": 40}},
+  "fried_rice":     {"name": "Fried Rice",       "type": "consumable", "desc": "Restores 50 HP.", "use": {"hp": 50}},
+  "tea":            {"name": "Hot Tea",          "type": "consumable", "desc": "Calms the nerves. Restores 10 RE.", "use": {"re": 10}},
+  "rice":           {"name": "Rice",             "type": "ingredient", "desc": "A handful of rice. For cooking."},
+  "egg":            {"name": "Egg",              "type": "ingredient", "desc": "A fresh egg. For cooking."},
+  "vegetable":      {"name": "Vegetables",       "type": "ingredient", "desc": "Chopped greens. For cooking."},
+  "tea_leaves":     {"name": "Tea Leaves",       "type": "ingredient", "desc": "Dried leaves. For brewing tea."},
+  "coffee_beans":   {"name": "Coffee Beans",     "type": "ingredient", "desc": "Dark roast. For making coffee."},
+  "phone":          {"name": "Cracked Phone",    "type": "key",        "desc": "Three missed calls from an unknown number."},
+  "fists":          {"name": "Bare Fists",       "type": "weapon",     "desc": "No weapon. Reliable, if painful.", "mods": {}},
+  "pocket_knife":   {"name": "Pocket Knife",     "type": "weapon",     "desc": "Small but sharp. +1 Strength.", "mods": {"strength": 1}},
+  "blue_jacket":    {"name": "Blue Jacket",      "type": "armor",      "desc": "Your favourite jacket. +1 Endurance.", "mods": {"endurance": 1}},
+  "hoodie":         {"name": "Old Hoodie",       "type": "armor",      "desc": "Soft and worn. +1 Vigor.", "mods": {"vigor": 1}},
+  "dull_shard":     {"name": "Dull Rift Shard",  "type": "crystal",    "desc": "Barely hums. +10 max RE, +1 Arcane.", "mods": {"max_re": 10, "arcane": 1}},
+  "style_unbound":  {"name": "Unbound",          "type": "style",      "desc": "No fixed Rift style. Raw, untrained power.", "mods": {}},
+  "style_surge":    {"name": "Surge",            "type": "style",      "desc": "Overwhelming bursts. +1 Strength, -5 max RE.", "mods": {"strength": 1, "max_re": -5}}
+}

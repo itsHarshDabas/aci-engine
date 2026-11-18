@@ -1,0 +1,12 @@
+{
+  "name": "Zemantas",
+  "title": "Black Serpent Demon",
+  "hp": 300,
+  "desc": "A winged serpent of living shadow with blue horns. It hisses your name.",
+  "attacks": [
+    {"id": "blue_flame",   "name": "Blue Flame",   "damage": 20, "anim": "blue_flame",
+     "text": "Zemantas breathes a torrent of blue flame!"},
+    {"id": "poison_spit",  "name": "Poison Spit",  "damage": 30, "anim": "poison_spit",
+     "text": "Zemantas spits a glob of poison!"}
+  ]
+}

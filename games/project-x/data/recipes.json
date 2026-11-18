@@ -1,0 +1,12 @@
+{
+  "rice_ball":  {"name": "Rice Ball",   "kind": "food", "needs": {"rice": 1}, "makes": "rice_ball", "minutes": 10,
+                 "desc": "Simple, filling. Restores 20 HP."},
+  "omelette":   {"name": "Omelette",    "kind": "food", "needs": {"egg": 2, "vegetable": 1}, "makes": "omelette", "minutes": 15,
+                 "desc": "Soft and hot. Restores 40 HP."},
+  "fried_rice": {"name": "Fried Rice",  "kind": "food", "needs": {"rice": 1, "egg": 1, "vegetable": 1}, "makes": "fried_rice", "minutes": 20,
+                 "desc": "Grandma's favourite. Restores 50 HP."},
+  "tea":        {"name": "Hot Tea",     "kind": "food", "needs": {"tea_leaves": 1}, "makes": "tea", "minutes": 5,
+                 "desc": "Calms the nerves. Restores 10 RE."},
+  "coffee":     {"name": "Canned Coffee", "kind": "food", "needs": {"coffee_beans": 1}, "makes": "coffee", "minutes": 5,
+                 "desc": "Bitter and strong. Restores 15 RE."}
+}

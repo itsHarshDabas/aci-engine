@@ -1,0 +1,40 @@
+{
+  "strike": {
+    "name": "Strike",
+    "damage": 15,
+    "re": 0,
+    "anim": "strike",
+    "desc": "A quick rush and a kick. Costs no RE."
+  },
+  "ultima_blast": {
+    "name": "Ultima Blast",
+    "damage": 50,
+    "re": 10,
+    "anim": "ultima_blast",
+    "desc": "A kamehameha-type beam of pure energy."
+  },
+  "insight_break": {
+    "name": "Insight Break",
+    "damage": 20,
+    "re": 4,
+    "anim": "insight_break",
+    "desc": "Your face flashes in their mind, then reality shatters like glass."
+  },
+  "zero_assault": {
+    "name": "Zero Assault",
+    "damage": 30,
+    "re": 6,
+    "anim": "zero_assault",
+    "desc": "Teleport behind the enemy and kick the hell out of it."
+  },
+  "infinity_world_slash": {
+    "name": "Infinity World Slash",
+    "damage": 100,
+    "re": 0,
+    "anim": "infinity_world_slash",
+    "form": "shade",
+    "ex": true,
+    "gauge": 20,
+    "desc": "EX. Cuts the world itself. Shade form only, costs 20 Neo Force."
+  }
+}
