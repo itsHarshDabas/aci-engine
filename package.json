@@ -13,7 +13,7 @@
     "start": "node bin/aci.mjs",
     "dev": "node bin/aci.mjs --no-open",
     "mcp": "node bin/aci.mjs mcp",
-    "test": "node test/projects.test.mjs",
+    "test": "node test/projects.test.mjs && node test/desktop.test.mjs",
     "pack:check": "npm pack --dry-run"
   },
   "files": [

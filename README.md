@@ -10,13 +10,14 @@ No build step and no dependencies.
 npx aci-engine            # or: node bin/aci.mjs
 ```
 
-This starts a local server and opens the editor in your browser, like local n8n. You get a project launcher with templates, a scene view, Hierarchy, Inspector, Assets, Console and Agents panels, a tile painter, a sprite painter, an animation timeline, no-code Behaviours, and Play / Pause / Stop. Build exports one HTML file. Projects are normal folders in `~/ACI Projects`.
+This starts a local server and opens the editor in your browser, like local n8n. You get a project launcher with templates, a scene view, Hierarchy, Inspector, Assets, Console and Agents panels, a tile painter, a sprite painter, an animation timeline, no-code Behaviours, and Play / Pause / Stop. Build exports one HTML file, or a desktop app for Windows (.exe), macOS or Linux. Projects are normal folders in `~/ACI Projects`.
 
 | Command | What it does |
 | --- | --- |
 | `aci` / `aci start [--port=7777] [--dir=folder] [--no-open]` | Starts the editor |
 | `aci new "My Game" --template=platformer` | Creates a project (`aci templates` lists templates) |
 | `aci build my-game` | Exports `build/index.html` |
+| `aci build my-game --target=windows` | Exports a desktop app zip (`windows`, `mac`, `mac-x64`, `linux`, or `all`) |
 | `aci list` | Lists your projects |
 | `aci mcp` | MCP server, so Claude can build in the open editor (`claude mcp add aci -- npx aci-engine mcp`) |
 
@@ -135,3 +136,11 @@ The published demo has an "Ask Claude to build" panel, where Claude looks at the
 ```
 
 A frame can use `"fg": [["#hex", null, ...], ...]` instead of `colors` and `palette`, which converted images do.
+
+## Desktop apps
+
+Build ▾ in the editor (or `aci build <project> --target=windows|mac|mac-x64|linux|all`) wraps the one-file HTML build in a small desktop app and writes `build/<Name>-<target>.zip` to the project folder. Unzip it and run `<Name>.exe`, `<Name>.app`, or `./<name>`. F11 (or Ctrl+Cmd+F on a Mac) toggles full screen.
+
+- The app runtime is Electron (about 100 MB per platform). It downloads once and is cached in `~/.aci/electron`. Set `ACI_ELECTRON_CACHE`, `ACI_ELECTRON_MIRROR` or `ACI_ELECTRON_VERSION` to change where it is stored, where it comes from, or which version you get.
+- You can build every platform from any computer, because nothing is compiled.
+- The apps are not code-signed. Windows SmartScreen asks once ("More info", then "Run anyway"). macOS needs `xattr -cr` plus an ad-hoc `codesign`, and the README.txt inside the zip gives the exact commands.

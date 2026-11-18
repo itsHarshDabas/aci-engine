@@ -39,6 +39,7 @@ function help() {
     aci start [options]         Same, with options
     aci new <name> [--template=id]   Create a project (templates: aci templates)
     aci build <project>         Export a project as one HTML file
+      --target=windows|mac|mac-x64|linux|all   ...or as a desktop app (.zip with an .exe / .app)
     aci list                    List your projects
     aci templates               List project templates
     aci mcp [--agent=name]      Run the MCP server so Claude can build in the editor
@@ -115,10 +116,20 @@ async function main() {
   if (cmd === 'build' || cmd === 'export') {
     const id = rest[1];
     if (!id) { say(c.red('  Which project? aci build <project>  (see: aci list)')); process.exitCode = 1; return; }
-    return withServer(async base => {
+    const want = String(flags.target || 'web').toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+    const { TARGETS, exportDesktop } = await import(pathToFileURL(path.join(ROOT, 'server', 'desktop.mjs')).href);
+    const targets = want.includes('all') ? ['web', 'windows', 'mac', 'linux'] : want.map(t => ({ win: 'windows', exe: 'windows', html: 'web', macos: 'mac', osx: 'mac' }[t] || t));
+    const bad = targets.filter(t => t !== 'web' && !TARGETS[t]);
+    if (bad.length) { say(c.red(`  Unknown target "${bad[0]}". Use: web, ${Object.keys(TARGETS).join(', ')}, all`)); process.exitCode = 1; return; }
+    return withServer(async (base, s) => {
       const r = await api(base, '/api/projects/' + encodeURIComponent(id) + '/build', { method: 'POST', body: '{}' });
       say(`  ${c.green('✓')} Built ${c.bold(r.file)} ${c.dim('(' + Math.round((r.size || 0) / 1024) + ' KB)')}`);
-      say(c.dim('    It is a single HTML file: open it in any browser, or upload it anywhere.'));
+      if (targets.length === 1 && targets[0] === 'web') say(c.dim('    It is a single HTML file: open it in any browser, or upload it anywhere.\n    Desktop apps: aci build ' + id + ' --target=windows|mac|linux|all'));
+      for (const t of targets.filter(t => t !== 'web')) {
+        let shown = 0;
+        const d = await exportDesktop(ROOT, s.workspace, id, t, () => {}, f => { const pct = Math.round(f * 100); if (pct >= shown + 10) { shown = pct; say(c.dim(`    downloading the ${TARGETS[t].label} runtime… ${pct}%`)); } });
+        say(`  ${c.green('✓')} ${TARGETS[t].label}: ${c.bold(d.file)} ${c.dim('(' + Math.round(d.size / 1048576) + ' MB, unzip and run; see README.txt inside)')}`);
+      }
     });
   }
 

@@ -400,6 +400,34 @@
       log('Built ' + r.file, 'ok');
     } catch (e) { toast('Build failed: ' + e.message, 'err', 8000); log('Build failed: ' + e.message, 'error'); }
   }
+  // desktop app: the same one-file build wrapped in a small app runtime (downloaded once, then cached)
+  async function buildDesktop(target, label, id = ed.projectId) {
+    let t;
+    try {
+      if (id === ed.projectId) await saveAll(true);
+      t = toast(h('div', {}, h('b', {}, 'Making the ' + label + ' app…'), h('div', { class: 'muted', style: 'font-size:12px' }, 'The first time downloads the app runtime (about 100 MB). Later builds take seconds.')), '', 600000);
+      const r = await api('/api/projects/' + encodeURIComponent(id) + '/export', { method: 'POST', json: { target } });
+      t.remove();
+      if (!r.ok) throw new Error(r.error || 'export failed');
+      const fname = r.file.split('/').pop();
+      toast(h('div', {}, h('b', {}, label + ' app ready'), h('div', { class: 'muted', style: 'font-size:12px;overflow-wrap:anywhere' }, r.file + ' · ' + Math.round(r.size / 1048576) + ' MB. Unzip it and run the app; README.txt inside explains the first launch.'),
+        h('div', { style: 'margin-top:6px;display:flex;gap:6px' }, h('a', { class: 'btn primary', href: fileUrl(id, r.file), download: fname }, 'Download .zip'))), 'ok', 20000);
+      log('Exported ' + r.file, 'ok');
+    } catch (e) { t && t.remove(); toast('Export failed: ' + e.message, 'err', 10000); log('Export failed: ' + e.message, 'error'); }
+  }
+  function buildMenu(ev) {
+    const r = (ev && ev.currentTarget || $('#buildBtn')).getBoundingClientRect();
+    menu(r.right - 260, r.bottom + 4, [
+      { label: 'Export your game' },
+      { icon: '◱', text: 'Web page (one HTML file)', run: () => build() },
+      '-',
+      { label: 'Desktop app' },
+      { icon: '⊞', text: 'Windows (.exe)', run: () => buildDesktop('windows', 'Windows') },
+      { icon: '⌘', text: 'macOS (Apple Silicon)', run: () => buildDesktop('mac', 'macOS') },
+      { icon: '⌘', text: 'macOS (Intel)', run: () => buildDesktop('mac-x64', 'macOS Intel') },
+      { icon: '◆', text: 'Linux', run: () => buildDesktop('linux', 'Linux') },
+    ]);
+  }
 
   // ================================================================ undo
   function pushUndo(entry) { undoStack.push(entry); if (undoStack.length > 200) undoStack.shift(); redoStack.length = 0; markDirty(); }
@@ -1231,7 +1259,7 @@ ACI.behaviour('${name}', {
     $('#sceneAdd').onclick = ev => sceneMenu(ev.clientX, ev.clientY);
     $('#playBtn').onclick = play; $('#pauseBtn').onclick = togglePause; $('#stepBtn').onclick = stepFrame; $('#stopBtn').onclick = stop;
     const sb = $('#saveState'); sb.before(h('button', { class: 'btn ghost icon', title: 'Undo (Ctrl+Z)', onclick: undoStep }, '↶'), h('button', { class: 'btn ghost icon', title: 'Redo (Ctrl+Y)', onclick: redoStep }, '↷'), h('button', { class: 'btn ghost', title: 'Find anything (Ctrl+K)', onclick: palette, style: 'color:var(--muted)' }, '⌕ Search ', h('kbd', {}, 'Ctrl K')), h('span', { class: 'sep' }));
-    $('#saveBtn').onclick = () => saveAll(); $('#buildBtn').onclick = () => build(); $('#openPlayBtn').onclick = openInTab;
+    $('#saveBtn').onclick = () => saveAll(); $('#buildBtn').onclick = buildMenu; $('#openPlayBtn').onclick = openInTab;
     addEventListener('keydown', onKey);
     addEventListener('keyup', ev => { if (ev.key === ' ') ui.space = false; });
     addEventListener('beforeunload', ev => { if (ui.dirty) { saveAll(true); ev.preventDefault(); ev.returnValue = ''; } });
