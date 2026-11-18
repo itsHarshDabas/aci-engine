@@ -13,7 +13,7 @@
   R.start = function start(data, opts = {}) {
     const log = (level, msg) => { try { opts.onLog && opts.onLog(level, String(msg)); } catch (e) {} (console[level] || console.log)('[aci] ' + msg); };
     const manifest = data.manifest || {}, settings = manifest.settings || {};
-    const game = ACI.game(opts.target || '#screen', { fontSize: settings.fontSize || 14, background: settings.background || '#0a0e1a' });
+    const game = ACI.game(opts.target || '#screen', { fontSize: settings.fontSize || 14, background: settings.background || '#0a0e1a', renderer: settings.renderer || 'auto' });
     R.game = game;
 
     // ---- assets: name -> sprite

@@ -264,7 +264,7 @@
     const row = (title, code) => h('div', { style: 'margin:0 0 14px' }, h('div', { class: 'muted', style: 'margin-bottom:4px' }, title),
       h('div', { style: 'display:flex;gap:6px' }, h('input', { class: 'field mono', readonly: true, value: code, onclick: e => e.target.select() }), h('button', { class: 'btn', onclick: () => { navigator.clipboard && navigator.clipboard.writeText(code); toast('Copied', 'ok', 1500); } }, 'Copy')));
     return h('div', { class: 'pane-body', style: 'max-width:720px' },
-      row('Claude Code: add the ACI tools (run once, in a terminal)', 'claude mcp add aci -- npx aci mcp'),
+      row('Claude Code: add the ACI tools (run once, in a terminal)', 'claude mcp add aci -- npx aci-engine mcp'),
       row('Any agent: send a command over HTTP', `curl -X POST ${base}/api/command -H "content-type: application/json" -d '{"op":"spawn","art":"@","name":"Bot","agent":"bot"}'`),
       row('See what the scene looks like, as text', `curl ${base}/api/look`),
       h('p', { class: 'muted' }, 'When a project is open, agent commands change the scene you are editing. Everything they add shows up in the Hierarchy and can be undone. When the game is playing in a separate tab, commands go to that game instead.'));
@@ -422,7 +422,7 @@
   function createEditGame() {
     const host = $('#sceneView'); host.textContent = '';
     const s = ed.project.settings || {};
-    const g = ACI.game(host, { fontSize: store.get('zoom', s.fontSize || 14), background: s.background || '#0a0e1a' });
+    const g = ACI.game(host, { fontSize: store.get('zoom', s.fontSize || 14), background: s.background || '#0a0e1a', renderer: s.renderer || 'auto' });
     g.paused = true; g.editMode = true; ed.game = g;
     // keep layers (water, grass) and animations alive without running gameplay
     let last = performance.now();
@@ -501,13 +501,13 @@
     const hov = ui.hover && liveOf(ui.hover);
     if (hov && ui.hover !== ed.selection) box(g, hov, '#5d6680');
     const sel = ed.selection && liveOf(ed.selection);
-    if (sel) { box(g, sel, '#f0c766'); const nm = ' ' + (sel._doc.name || '') + ' '; g.text(Math.round(sel.x), Math.round(sel.y) + sel.h, nm, '#1a1405', '#f0c766'); }
+    if (sel) { box(g, sel, '#f0c766'); const nm = ' ' + (sel._doc.name || '') + ' '; g.text(Math.round(sel.x), Math.round(sel.y) + Math.max(1, Math.ceil(sel.h)), nm, '#1a1405', '#f0c766'); }
     const tool = registry.tools.find(t => t.id === ui.tool);
     if (tool && tool.draw) try { tool.draw(g, ed); } catch (e) {}
     if (ui.dropAt) { g.put(ui.dropAt.x, ui.dropAt.y, '✚', '#f0c766'); }
   }
   function box(g, e, col) {
-    const x0 = Math.round(e.x) - 1, y0 = Math.round(e.y) - 1, x1 = Math.round(e.x) + e.w, y1 = Math.round(e.y) + e.h;
+    const x0 = Math.round(e.x) - 1, y0 = Math.round(e.y) - 1, x1 = Math.round(e.x) + Math.max(1, Math.ceil(e.w)), y1 = Math.round(e.y) + Math.max(1, Math.ceil(e.h));
     g.put(x0, y0, '┌', col); g.put(x1, y0, '┐', col); g.put(x0, y1, '└', col); g.put(x1, y1, '┘', col);
     if (e.w > 3) { g.put(x0 + 1, y0, '─', col); g.put(x1 - 1, y0, '─', col); g.put(x0 + 1, y1, '─', col); g.put(x1 - 1, y1, '─', col); }
   }
@@ -519,7 +519,7 @@
     for (const e of g.entities) {
       if (e.hidden || !e._doc) continue;
       const ex = Math.round(e.x), ey = Math.round(e.y);
-      if (x >= ex && y >= ey && x < ex + e.w && y < ey + e.h && (!best || (e.z || 0) >= (best.z || 0))) best = e;
+      if (x >= ex && y >= ey && x < ex + Math.max(1, Math.ceil(e.w)) && y < ey + Math.max(1, Math.ceil(e.h)) && (!best || (e.z || 0) >= (best.z || 0))) best = e;
     }
     return best;
   }
@@ -577,7 +577,7 @@
     });
   }
   function clampCam() { const g = ed.game; g.camera.x = Math.max(-20, Math.min(g.cols - g.viewCols + 20, g.camera.x)); g.camera.y = Math.max(-10, Math.min(g.rows - g.viewRows + 10, g.camera.y)); }
-  function zoom(dir) { const g = ed.game; if (!g) return; const sizes = [7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32]; let i = sizes.findIndex(s => s >= g.fontSize); if (i < 0) i = sizes.length - 1; i = Math.max(0, Math.min(sizes.length - 1, i + dir)); const cxw = g.camera.x + g.viewCols / 2, cyw = g.camera.y + g.viewRows / 2; g.setFontSize(sizes[i]); store.set('zoom', sizes[i]); g.camera.x = cxw - g.viewCols / 2; g.camera.y = cyw - g.viewRows / 2; renderSceneTools(); renderStatus(); }
+  function zoom(dir) { const g = ed.game; if (!g) return; const sizes = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32]; let i = sizes.findIndex(s => s >= g.fontSize); if (i < 0) i = sizes.length - 1; i = Math.max(0, Math.min(sizes.length - 1, i + dir)); const cxw = g.camera.x + g.viewCols / 2, cyw = g.camera.y + g.viewRows / 2; g.setFontSize(sizes[i]); store.set('zoom', sizes[i]); g.camera.x = cxw - g.viewCols / 2; g.camera.y = cyw - g.viewRows / 2; renderSceneTools(); renderStatus(); }
   function frameAll() { const g = ed.game; if (!g) return; g.camera.target = null; g.camera.x = Math.min(0, (g.cols - g.viewCols) / 2) | 0; g.camera.y = Math.min(0, (g.rows - g.viewRows) / 2) | 0; const p = ed.scene.entities.find(d => (d.tags || []).includes('player')); if (p && (g.cols > g.viewCols || g.rows > g.viewRows)) { g.camera.x = Math.max(0, p.x - g.viewCols / 2); g.camera.y = Math.max(0, p.y - g.viewRows / 2); } }
   function frameSel() { const g = ed.game, d = ed.selection; if (!g || !d) return frameAll(); g.camera.target = null; const e = liveOf(d); g.camera.x = d.x + (e ? e.w : 1) / 2 - g.viewCols / 2; g.camera.y = d.y + (e ? e.h : 1) / 2 - g.viewRows / 2; clampCam(); }
 
@@ -895,7 +895,9 @@
     body.append(sect('Background', envRows));
     body.append(sect('Project', [
       row('Name', txt(man.name, async v => { v = v.trim(); if (!v || v === man.name) return; try { await saveAll(true); const r = await api('/api/projects/' + encodeURIComponent(ed.projectId) + '/rename', { method: 'POST', json: { to: v } }); man.name = v; ed.projectId = r.id; $('#projName').textContent = v; history.replaceState(null, '', '#project=' + encodeURIComponent(r.id) + '&scene=' + encodeURIComponent(ed.sceneName)); toast('Renamed', 'ok'); } catch (e) { toast('Rename failed: ' + e.message, 'err'); } })),
-      row('Text size', num(set.fontSize || 14, v => { set.fontSize = Math.max(6, Math.min(40, v || 14)); markDirty(); }, { min: 6, max: 40 }), 'Character size in pixels when the game runs'),
+      row('Detail', sel(set.fontSize || 14, [{ value: 14, label: 'Classic (14 px characters)' }, { value: 10, label: 'Fine (10 px)' }, { value: 6, label: 'High detail (6 px)' }, { value: 4, label: 'Ultra (4 px, 300+ columns)' }, { value: 3, label: 'Max (3 px)' }].concat([14, 10, 6, 4, 3].includes(set.fontSize || 14) ? [] : [{ value: set.fontSize, label: set.fontSize + ' px' }]), v => { set.fontSize = +v; markDirty(); if (ed.game) { ed.game.setFontSize(+v); store.set('zoom', +v); renderSceneTools(); frameAll(); } renderInspector(); }), 'Character size when the game runs. Smaller = more detail; use a bigger world size too'),
+      row('Text size', num(set.fontSize || 14, v => { set.fontSize = Math.max(3, Math.min(40, v || 14)); markDirty(); if (ed.game) ed.game.setFontSize(set.fontSize); renderInspector(); }, { min: 3, max: 40 }), 'Exact character size in pixels'),
+      row('Renderer', sel(set.renderer || 'auto', [{ value: 'auto', label: 'Auto (GPU when the scene is big)' }, { value: 'webgl', label: 'GPU (WebGL2)' }, { value: 'canvas', label: 'Canvas 2D' }], v => { set.renderer = v; markDirty(); toast('Renderer applies when you reopen the project or press Play', '', 3000); }), 'How characters are drawn. GPU keeps 144 fps with hundreds of columns'),
       row('Background', colour(set.background || '#0a0e1a', v => { set.background = v; markDirty(); }), 'Colour behind everything'),
       row('Auto-save', chk(store.get('autosave', true), v => store.set('autosave', v), 'Save changes automatically')),
       h('div', { class: 'muted', style: 'font-size:11px;word-break:break-all' }, 'Folder: ' + (info.workspace ? info.workspace + '/' : '') + ed.projectId),
@@ -1173,6 +1175,7 @@ ACI.behaviour('${name}', {
       g ? h('span', {}, 'view ' + Math.round(g.camera.x) + ', ' + Math.round(g.camera.y)) : null,
       h('span', { class: 'spacer' }),
       h('span', { class: ui.bridge ? 'ok' : '' }, ui.bridge ? '● agents can connect' : '○ agent bridge offline'),
+      g && g.renderer ? h('span', {}, (g.renderer() === 'webgl' ? 'GPU' : 'canvas') + ' · ' + (g.fps || 0) + ' fps') : null,
       h('span', {}, ui.playing ? (ui.paused ? '❚❚ paused' : '▶ playing') : 'edit mode'),
       h('span', {}, 'ACI ' + (info.version || ''))].filter(Boolean));
     [...st.childNodes].forEach(n => { if (n.nodeType === 3) n.remove(); });
@@ -1276,13 +1279,15 @@ ACI.behaviour('${name}', {
     let st = {}; try { st = await api('/api/ai/status'); } catch (e) {}
     const prompt = h('textarea', { class: 'field', rows: 3, placeholder: o.placeholder || 'e.g. a knight with a red cape and a glowing sword' });
     const w = num(o.w, () => {}, { prefix: 'W', min: 1, max: 240 }), hh = num(o.h, () => {}, { prefix: 'H', min: 1, max: 120 });
-    const status = h('div', { class: 'muted', style: 'font-size:12px' }, st.direct ? 'Uses ' + st.model + ' with your API key.' : 'No API key on this computer, so a connected agent answers (Claude Code with the ACI tools: claude mcp add aci -- npx aci mcp). Or start aci with ANTHROPIC_API_KEY set.');
+    const status = h('div', { class: 'muted', style: 'font-size:12px' }, st.direct ? 'Uses ' + st.model + ' with your API key.' : 'No API key on this computer, so a connected agent answers (Claude Code with the ACI tools: claude mcp add aci -- npx aci-engine mcp). Or start aci with ANTHROPIC_API_KEY set.');
     const prev = h('div', { class: 'sprite-prev', style: 'min-height:90px;max-height:300px', hidden: true });
     const body = [h('label', { class: 'muted' }, o.label || 'Describe it'), prompt, o.size !== false ? row('Size', h('div', { class: 'pair' }, w, hh), 'Leave empty to let Claude choose') : null, prev, status];
     let result = null, busy = false;
     return new Promise(resolve => {
       const scrim = h('div', { class: 'scrim' }); const footer = h('footer');
-      const close = v => { scrim.remove(); resolve(v); };
+      const esc = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); close(null); } };
+      const close = v => { scrim.remove(); removeEventListener('keydown', esc, true); resolve(v); };
+      addEventListener('keydown', esc, true);
       const go = h('button', { class: 'btn primary' }, '✦ Generate');
       const use = h('button', { class: 'btn primary', hidden: true }, o.useLabel || 'Use it');
       go.onclick = async () => {

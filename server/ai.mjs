@@ -70,7 +70,7 @@ export function register(api) {
       queue.set(id, item);
       api.broadcast && api.broadcast({ type: 'ai-request', id, kind: item.kind, prompt: item.prompt });
       api.log(`ai: request #${id} waiting for an agent (${item.kind}): ${String(b.prompt).slice(0, 80)}`);
-      const timer = setTimeout(() => item.reject(new Error('no agent answered in 10 minutes. Connect Claude Code with: claude mcp add aci -- npx aci mcp, or set ANTHROPIC_API_KEY before starting aci')), 600000);
+      const timer = setTimeout(() => item.reject(new Error('no agent answered in 10 minutes. Connect Claude Code with: claude mcp add aci -- npx aci-engine mcp, or set ANTHROPIC_API_KEY before starting aci')), 600000);
       req.on('close', () => { if (!item.done) { item.done = true; clearTimeout(timer); queue.delete(id); } });
       try { const json = await result; clearTimeout(timer); api.send(res, 200, { ok: true, json, via: 'agent' }); }
       catch (e) { clearTimeout(timer); api.send(res, 200, { ok: false, error: e.message }); }

@@ -7,7 +7,7 @@ No build step and no dependencies.
 ## The editor (start here)
 
 ```
-npx aci            # or: node bin/aci.mjs
+npx aci-engine            # or: node bin/aci.mjs
 ```
 
 This starts a local server and opens the editor in your browser, like local n8n. You get a project launcher with templates, a scene view, Hierarchy, Inspector, Assets, Console and Agents panels, a tile painter, a sprite painter, an animation timeline, no-code Behaviours, and Play / Pause / Stop. Build exports one HTML file. Projects are normal folders in `~/ACI Projects`.
@@ -18,7 +18,7 @@ This starts a local server and opens the editor in your browser, like local n8n.
 | `aci new "My Game" --template=platformer` | Creates a project (`aci templates` lists templates) |
 | `aci build my-game` | Exports `build/index.html` |
 | `aci list` | Lists your projects |
-| `aci mcp` | MCP server, so Claude can build in the open editor (`claude mcp add aci -- npx aci mcp`) |
+| `aci mcp` | MCP server, so Claude can build in the open editor (`claude mcp add aci -- npx aci-engine mcp`) |
 
 Screenshots: `screenshots/editor/`. Plugin API: `docs/EDITOR-CONTRACT.md`.
 
