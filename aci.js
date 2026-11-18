@@ -520,7 +520,7 @@ void main(){ float g = texture(u_tex, v_uv).a; o = vec4(v_fg.rgb * g + v_bg.rgb 
       }
       a.fillText(chr, x, y + Math.round((chp - G.fontSize * dpr) / 2)); a.restore(); GLS.dirty = true; return g;
     }
-    const packCol = c => { let v = GLS.cols.get(c); if (v === undefined) { const m = parseColor(c); v = ((m[0] & 255) | (m[1] & 255) << 8 | (m[2] & 255) << 16 | 255 << 24) >>> 0; if (GLS.cols.size > 50000) GLS.cols.clear(); GLS.cols.set(c, v); } return v; };
+    const packCol = c => { let v = GLS.cols.get(c); if (v === undefined) { const m = parseColor(c); const k = n => (n > 255 ? 255 : n < 0 ? 0 : n | 0); v = (k(m[0]) | k(m[1]) << 8 | k(m[2]) << 16 | 255 << 24) >>> 0; if (GLS.cols.size > 50000) GLS.cols.clear(); GLS.cols.set(c, v); } return v; };
     function glCells(C, F, B, only) {
       const gl = GLS.gl, dpr = Math.min(2, window.devicePixelRatio || 1), N = G.viewCols * G.viewRows;
       const [cwp, chp] = glSetup(dpr);
@@ -569,7 +569,11 @@ void main(){ float g = texture(u_tex, v_uv).a; o = vec4(v_fg.rgb * g + v_bg.rgb 
         for (const i of idx) ctx.fillText(C[i], (i % cols) * cw, ((i / cols) | 0) * chh + oy);
       }
     }
-    function paint() {
+    const overlays = [];
+    /** onOverlay(fn(ctx, game)): draw crisp canvas-2D UI (HUD, bars, text at any size) over the grid, in CSS pixels */
+    G.onOverlay = f => { overlays.push(f); return G; };
+    function paint() { paintGrid(); if (overlays.length) { ctx.save(); for (const f of overlays) { try { f(ctx, G); } catch (e) { console.error('[ACI] overlay:', e); } } ctx.restore(); } }
+    function paintGrid() {
       ctx.fillStyle = bgColor; ctx.fillRect(0, 0, G.viewCols * G.cellW, G.viewRows * G.cellH);
       if (!snap) { paintCells(ch, fg, bg, null); return; }
       paintCells(snap.ch, snap.fg, snap.bg, null); paintHires();

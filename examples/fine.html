@@ -1,0 +1,52 @@
+<!doctype html>
+<meta charset="utf-8"><title>ACI – fine density world</title>
+<body style="margin:0;background:#050805;overflow:hidden"><div id="screen" style="width:100vw;height:100vh"></div>
+<script src="../aci.js"></script><script src="../modules/convert.js"></script><script src="../modules/anim.js"></script>
+<script>
+/* Fine-density world: 3-5 px cells, per-cell colour, WebGL glyph-atlas renderer, high-res creature sprite, HUD + labels. */
+const q = new URLSearchParams(location.search);
+const game = ACI.game('#screen', { fontSize: +(q.get('font') || 4), renderer: q.get('renderer') || 'auto', background: '#030603' });
+window.game = game;
+const GR = ['\\', '|', '/', '!', ':', ';', '"', "'", ','];
+// dense grass: per-cell colour, wind shimmer, sparkle dots
+game.layer((x, y, t) => {
+  const h = ACI.hash(x, y, 7), n = ACI.fbm(x * 0.045, y * 0.06 + 3), w = Math.sin(x * 0.2 + t * 1.6 + n * 6) * 0.5 + 0.5;
+  if (h > 0.985 && ((t * 2 + h * 40) % 3) < 1.2) return ['·', '#e8fff0'];
+  const base = 70 + n * 60 + w * 30 + (h - 0.5) * 56, r = base * 0.55 + 4, g = base * 1.3 + 8, b = base * 0.62 + 6;
+  return [GR[(h * 9 | 0) % 9], `rgb(${Math.min(255, r) | 0},${Math.min(255, g) | 0},${Math.min(255, b) | 0})`];
+});
+function creature(W, H) {   // procedural beast: shaded body, mane, horns, legs, eye - painted then converted to fine glyphs
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const blob = (cx, cy, rx, ry, rot, c0, c1) => { const g = x.createRadialGradient(cx - rx * .3, cy - ry * .4, ry * .1, cx, cy, Math.max(rx, ry)); g.addColorStop(0, c0); g.addColorStop(1, c1); x.fillStyle = g; x.beginPath(); x.ellipse(cx, cy, rx, ry, rot, 0, 7); x.fill(); };
+  const leg = (x0, y0, x1, y1, w, c0) => { x.strokeStyle = c0; x.lineCap = 'round'; x.lineWidth = w; x.beginPath(); x.moveTo(x0, y0); x.quadraticCurveTo((x0 + x1) / 2 + 20, (y0 + y1) / 2, x1, y1); x.stroke(); };
+  leg(W * .26, H * .62, W * .2, H * .97, W * .07, '#6a1612'); leg(W * .38, H * .66, W * .4, H * .98, W * .07, '#7a1c16');
+  leg(W * .66, H * .62, W * .72, H * .97, W * .07, '#6a1612'); leg(W * .78, H * .6, W * .85, H * .95, W * .06, '#7a1c16');
+  blob(W * .52, H * .5, W * .36, H * .22, -.05, '#d5614a', '#5a0f0e');               // body
+  blob(W * .27, H * .4, W * .14, H * .17, -.3, '#e0735a', '#7a1812');                 // shoulder
+  blob(W * .13, H * .3, W * .09, H * .1, -.5, '#e8826a', '#8a2018');                  // head
+  x.fillStyle = '#f4e0c0'; for (const s of [-1, 1]) { x.beginPath(); x.moveTo(W * (.13 + .02 * s), H * .22); x.quadraticCurveTo(W * (.1 + .07 * s), H * .02, W * (.17 + .09 * s), H * .06); x.quadraticCurveTo(W * (.15 + .04 * s), H * .1, W * (.15 + .02 * s), H * .24); x.fill(); }   // horns
+  x.fillStyle = '#fff6d0'; x.beginPath(); x.arc(W * .115, H * .28, W * .008, 0, 7); x.fill(); x.fillStyle = '#220'; x.beginPath(); x.arc(W * .117, H * .28, W * .004, 0, 7); x.fill();
+  for (let i = 0; i < 420; i++) { const t = Math.random(), px = W * (.2 + t * .6), py = H * (.3 + Math.sin(t * 3) * .04 + Math.random() * .3); x.strokeStyle = `rgba(${200 + Math.random() * 55 | 0},${90 + Math.random() * 90 | 0},${60 + Math.random() * 40 | 0},${.25 + Math.random() * .5})`; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); x.moveTo(px, py); x.lineTo(px - W * .02 - Math.random() * W * .02, py + H * .06 + Math.random() * H * .08); x.stroke(); }   // fur strokes
+  x.fillStyle = '#e2a070'; x.beginPath(); x.moveTo(W * .18, H * .3); for (let i = 0; i < 14; i++) x.lineTo(W * (.2 + i * .035), H * (.28 + (i % 2) * .05 - i * .004)); x.lineTo(W * .7, H * .4); x.lineTo(W * .2, H * .42); x.fill();   // mane ridge
+  return c;
+}
+(async () => {
+  const spr = await ACI.convert.image(creature(1100, 560), { mode: 'shape', cols: 200, res: 2, aspect: 0.6, color: true, colorLift: 0.7, bg: 'none', autoLevels: false, contrast: 1.1 });
+  const beast = game.add(spr, { x: 6, y: Math.round(game.viewRows * 0.45), z: 2, name: 'Old Sabatons' });
+  game.add(ACI.sprite('o\n|', { color: '#fff' }), { x: 125, y: 40, name: 'Senje', labelColor: '#cfe' });
+  game.add(ACI.sprite('o\n|', { color: '#fc8' }), { x: 160, y: 55, name: 'Jade', labelColor: '#cfe' });
+  let dmg = 0;
+  game.every ? game.every(1.4, () => { game.floatText && game.floatText(Math.round(40 + Math.random() * 200) , 40, 66, { color: '#7f7' }); }) : 0;
+  const panel = (ctx, x, y, w, h) => { ctx.fillStyle = 'rgba(0,0,0,.88)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#cfd6cf'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2); };
+  const meter = (ctx, x, y, w, v, m, c) => { ctx.fillStyle = '#111'; ctx.fillRect(x, y, w, 12); ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, 11); ctx.fillStyle = c; const n = Math.floor((w - 4) / 4 * v / m); for (let i = 0; i < n; i++) ctx.fillRect(x + 2 + i * 4, y + 2, 3, 8); };
+  game.onOverlay((ctx, G) => {
+    ctx.font = '600 13px "JetBrains Mono",Menlo,Consolas,monospace'; ctx.textBaseline = 'top';
+    [['Senje · 11', 1735, 3591, 129, 129, '3889g'], ['Jade · 6', 260, 260, 567, 567, '']].forEach((r, i) => { const y = 12 + i * 92; panel(ctx, 12, y, 290, 82);
+      ctx.fillStyle = '#e8ffe8'; ctx.fillText(r[0], 22, y + 8); meter(ctx, 22, y + 28, 180, r[1], r[2], '#d44'); ctx.fillStyle = '#ddd'; ctx.fillText(r[1] + '/' + r[2], 212, y + 26); meter(ctx, 22, y + 48, 180, r[3], r[4], '#49d'); ctx.fillText(r[3] + '/' + r[4], 212, y + 46); if (r[5]) ctx.fillText(r[5], 22, y + 64); });
+    ctx.font = '600 12px "JetBrains Mono",Menlo,Consolas,monospace'; ctx.textAlign = 'center'; ctx.shadowColor = '#000'; ctx.shadowBlur = 4;
+    for (const e of G.entities) if (e.name && e.name !== 'Old Sabatons') { const p = G.toScreen(e.x, e.y); ctx.fillStyle = '#d8f4e0'; ctx.fillText(e.name, (p.x + 0.5) * G.cellW, (p.y - 4) * G.cellH); }
+    const bp = G.toScreen(60, 120); ctx.fillStyle = '#9f9'; ctx.fillText('Old Sabatons', 200, 330); ctx.fillStyle = '#7f7'; ctx.font = '700 15px "JetBrains Mono",monospace'; ctx.fillText('+' + (200 + (G.time * 7 | 0) % 40), 330, 560 - (G.time * 20 % 40)); ctx.shadowBlur = 0;
+    ctx.font = '600 13px "JetBrains Mono",Menlo,Consolas,monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#9d9'; ctx.fillText('FPS ' + G.fps + '  ·  ' + G.renderer() + '  ·  ' + (G.viewCols * G.viewRows).toLocaleString() + ' cells', G.viewCols * G.cellW - 12, 12); ctx.textAlign = 'left';
+  });
+})();
+</script>

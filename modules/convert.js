@@ -145,7 +145,8 @@
       }
       cov.push(v); out.push(ch);
     }
-    return (GLYPH_SET = { chars: out, cov });
+    const vr = cov.map(v => { let m = 0; for (const x of v) m += x; m /= v.length; let t = 0; for (const x of v) t += (x - m) * (x - m); return t / v.length; });
+    return (GLYPH_SET = { chars: out, cov, vr });
   }
 
   function dims(iw, ih, o) {
@@ -247,8 +248,9 @@
       // best-matching glyph per cell: each cell is sampled SXxSY and compared with the real ink pattern of ~110 glyphs.
       // Gives crisp edges and fine tonal range at small cell sizes (the "photographic ASCII" look).
       const GS = glyphSet(), split = o.bg === 'color' || o.bg === 'split', NG = GS.chars.length, NS = SX * SY;
-      const tv = new Float32Array(NS), mix = new Float32Array(NS);
-      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const tv = new Float32Array(NS), mix = new Float32Array(NS), diffuse = o.dither !== 'none';
+      let eCur = new Float32Array(cols + 2), eNext = new Float32Array(cols + 2);
+      for (let y = 0; y < rows; y++) { const tmp = eCur; eCur = eNext; eNext = tmp; eNext.fill(0); for (let x = 0; x < cols; x++) {
         let a = 0, mn = 2, mx = -1, sm = 0;
         for (let j = 0; j < SY; j++) for (let i = 0; i < SX; i++) { const p = (y * SY + j) * PW + x * SX + i; a += opq[p]; const l = lum[p]; tv[j * SX + i] = l; if (l < mn) mn = l; if (l > mx) mx = l; sm += l; }
         if (a < NS * 0.5) { cells[y * cols + x] = { ch: ' ', fg: '#000000', bg: null }; continue; }
@@ -265,20 +267,26 @@
         if (!split) {   // ink colour at full brightness; coverage then carries the tone:  coverage = luma / inkLuma
           if (o.color === false) fgRGB = parseHex(o.tint); else { const m = Math.max(fgRGB[0], fgRGB[1], fgRGB[2], 1); fgRGB = fgRGB.map(v => v * 255 / m); }
           const Lf = Math.max(0.2, (0.2126 * fgRGB[0] + 0.7152 * fgRGB[1] + 0.0722 * fgRGB[2]) / 255), k0 = 1 / Lf;
-          const jit = o.jitter == null ? 0.05 : o.jitter, hsh = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; const jv = (hsh - Math.floor(hsh) - 0.5) * jit;
+          const jit = o.jitter == null ? 0.0 : o.jitter, hsh = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; const jv = (hsh - Math.floor(hsh) - 0.5) * jit + (diffuse ? Math.max(-0.5, Math.min(0.5, eCur[x + 1])) : 0);
           for (let k = 0; k < NS; k++) mix[k] = Math.max(0, Math.min(1, tv[k] * k0 + jv)); tgt = mix;
         }
+        const flat = Math.max(0, 1 - (mx - mn) / 0.3) * (o.smooth == null ? 1.2 : o.smooth);   // flat areas prefer even textures over busy glyphs
         let best = 0, be = 1e9, inv = false;
         for (let g = 0; g < NG; g++) {
-          const C = GS.cov[g]; let e = 0, e2 = 0;
+          const C = GS.cov[g]; let e = flat * GS.vr[g] * NS, e2 = e;
           for (let k = 0; k < NS; k++) { const d1 = tgt[k] - C[k]; e += d1 * d1; if (split) { const d2 = tgt[k] - (1 - C[k]); e2 += d2 * d2; } }
           if (e < be) { be = e; best = g; inv = false; } if (split && e2 < be) { be = e2; best = g; inv = true; }
         }
 
+        if (!split && diffuse) {   // cell-level error diffusion: tone the glyph could not reproduce moves to the neighbours
+          let mt = 0, mc = 0; const C = GS.cov[best]; for (let k = 0; k < NS; k++) { mt += mix[k]; mc += C[k]; }
+          const err = (mt - mc) / NS;
+          eCur[x + 2] += err * 7 / 16; eNext[x] += err * 3 / 16; eNext[x + 1] += err * 5 / 16; eNext[x + 2] += err * 1 / 16;
+        }
         if (split && inv) { const t = fgRGB; fgRGB = bgRGB || [0, 0, 0]; bgRGB = t; }
         const lc = o.color === false ? lmax : mx;
         cells[y * cols + x] = { ch: GS.chars[best], fg: colorOf(fgRGB.map(clamp255), lc), bg: split && bgRGB ? colorOf(bgRGB.map(clamp255), mn) : bgOf(fgRGB, mn) };
-      }
+      } }
     } else if (o.mode === 'blocks') {
       // half-block ▀: foreground = top pixel, background = bottom pixel  => 2x vertical resolution
       for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
