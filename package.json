@@ -1,20 +1,25 @@
 {
   "name": "aci-engine",
   "version": "0.3.0",
-  "description": "ACI Renderer Engine: a beginner-friendly ASCII game engine and editor. Run `npx aci` to open the editor in your browser.",
+  "description": "ACI Renderer Engine: a beginner-friendly ASCII game engine and browser editor. Run `npx aci-engine` to open the editor.",
   "main": "aci.js",
   "type": "commonjs",
   "bin": {
+    "aci-engine": "bin/aci.mjs",
     "aci": "bin/aci.mjs",
     "aci-mcp": "bridge/mcp.mjs"
   },
   "scripts": {
     "start": "node bin/aci.mjs",
     "dev": "node bin/aci.mjs --no-open",
-    "mcp": "node bin/aci.mjs mcp"
+    "mcp": "node bin/aci.mjs mcp",
+    "test": "node test/projects.test.mjs",
+    "pack:check": "npm pack --dry-run"
   },
   "files": [
     "aci.js",
+    "index.html",
+    "editor.html",
     "modules/",
     "runtime/",
     "server/",
@@ -25,7 +30,8 @@
     "examples/",
     "docs/",
     "tools/",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
@@ -38,5 +44,14 @@
     "ai-agents",
     "text-mode"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "author": "Harsh Dabas",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsHarshDabas/aci-engine.git"
+  },
+  "homepage": "https://github.com/itsHarshDabas/aci-engine#readme",
+  "bugs": {
+    "url": "https://github.com/itsHarshDabas/aci-engine/issues"
+  }
 }

@@ -1,0 +1,87 @@
+# Publishes aci-engine to npm and PyPI when a version tag (v0.3.0, v1.0.0, ...) is pushed.
+# Setup (once):
+#   npm:  add a repo secret NPM_TOKEN (npmjs.com > Access Tokens > Granular, publish rights).
+#   PyPI: add a "pending trusted publisher" on pypi.org for project aci-engine,
+#         owner itsHarshDabas, repo aci-engine, workflow release.yml, environment pypi.
+# Release: bump "version" in package.json, merge to main, then
+#   git tag v0.3.0 && git push origin v0.3.0
+name: Release
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: v
+        name: Tag matches package.json version
+        run: |
+          V=$(node -p "require('./package.json').version")
+          if [ "v$V" != "$GITHUB_REF_NAME" ]; then echo "tag $GITHUB_REF_NAME != package.json v$V"; exit 1; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+      - run: npm test
+
+  npm:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  pypi-build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: python3 python/bundle.py
+      - run: uv build
+        working-directory: python
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: python/dist/
+
+  pypi:
+    needs: pypi-build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # PyPI trusted publishing, no token needed
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: [npm, pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*

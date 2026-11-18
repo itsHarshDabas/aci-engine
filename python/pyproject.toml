@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aci-engine"
+dynamic = ["version"]
+description = "ACI Renderer Engine: a beginner-friendly ASCII game engine and browser editor. Run `aci-engine` (or `uvx aci-engine`) to open the editor."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Harsh Dabas" }]
+requires-python = ">=3.8"
+keywords = ["ascii", "game-engine", "editor", "mcp", "gamedev"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: JavaScript",
+  "Topic :: Games/Entertainment",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Environment :: Web Environment",
+]
+# Ships a Node.js binary, so the editor works even on machines without Node.
+# A system Node >= 18 is used first when one is installed.
+dependencies = ["nodejs-wheel-binaries>=20"]
+
+[project.urls]
+Homepage = "https://github.com/itsHarshDabas/aci-engine"
+Issues = "https://github.com/itsHarshDabas/aci-engine/issues"
+
+[project.scripts]
+aci-engine = "aci_engine.cli:main"
+aci = "aci_engine.cli:main"
+aci-mcp = "aci_engine.cli:mcp"
+
+[tool.hatch.version]
+path = "src/aci_engine/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aci_engine"]
+# app/ is produced by bundle.py and is git-ignored; force it into the build
+artifacts = ["src/aci_engine/app/**"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/aci_engine/**", "bundle.py", "README.md", "LICENSE"]
+artifacts = ["src/aci_engine/app/**"]

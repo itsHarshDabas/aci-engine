@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - name: npm package launches the editor
+        run: |
+          npm pack
+          ACI_WORKSPACE=$RUNNER_TEMP/ws ACI_NO_OPEN=1 npx -y ./aci-engine-*.tgz --port=7790 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:7790/editor/ >/dev/null && exit 0; sleep 1; done
+          echo "editor did not start"; exit 1
+      - uses: astral-sh/setup-uv@v6
+      - name: Python package launches the editor
+        run: |
+          python3 python/bundle.py
+          (cd python && uv build)
+          ACI_WORKSPACE=$RUNNER_TEMP/ws2 ACI_NO_OPEN=1 uvx --from python/dist/*.whl aci-engine --port=7791 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:7791/editor/ >/dev/null && exit 0; sleep 1; done
+          echo "editor did not start"; exit 1
