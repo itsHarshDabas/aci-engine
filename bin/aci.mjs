@@ -81,7 +81,7 @@ async function main() {
     say(BANNER);
     say(`   ${c.green('●')} Editor running at ${c.bold(c.gold(s.url))}`);
     say(`   ${c.dim('Projects folder:')} ${s.workspace}`);
-    say(`   ${c.dim('Agents:')} POST ${s.url}/api/command   ${c.dim('·')}   claude mcp add aci -- npx aci mcp`);
+    say(`   ${c.dim('Agents:')} POST ${s.url}/api/command   ${c.dim('·')}   claude mcp add aci -- npx aci-engine mcp`);
     say(c.dim('\n   Press Ctrl+C to stop.\n'));
     if (!flags['no-open'] && !process.env.ACI_NO_OPEN) openBrowser(s.url + '/editor/' + (rest[1] ? '#project=' + encodeURIComponent(rest[1]) : ''));
     const stop = () => { say(c.dim('\n   Stopping ACI. Your projects are saved in ' + s.workspace)); s.close().then(() => process.exit(0)); setTimeout(() => process.exit(0), 1500); };

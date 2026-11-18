@@ -22,7 +22,7 @@
   .cs .card{display:grid;grid-template-columns:28px 1fr auto;gap:6px;align-items:center;border:2px solid var(--line);border-radius:8px;background:var(--panel-2);padding:6px;cursor:pointer} .cs .card[aria-current=true]{border-color:var(--accent)} .cs .card.drop{border-color:var(--ok)}
   .cs .card .n{font:700 14px var(--mono);color:var(--muted);text-align:center} .cs .card .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis} .cs .card .cap{color:var(--muted);font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis} .cs .card .mini{display:flex;flex-direction:column;gap:2px} .cs .card .mini button{padding:0 5px;font-size:10px;line-height:14px}
   .cs .stage{width:100%;max-width:720px;aspect-ratio:16/9;background:#000;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative} .cs .stage .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--muted)}
-  .cs .fld>div{min-width:0} .cs .col{overflow-x:hidden} .cs .row input[type=text]{width:100%}
+  .cs .fld>div{min-width:0} .cs .col>*{flex-shrink:0} .cs .col{overflow-x:hidden} .cs .row input[type=text]{width:100%}
   .cs .cue{display:grid;grid-template-columns:56px 80px 1fr auto;gap:4px;align-items:center}`;
 
   function normalize(raw) {
