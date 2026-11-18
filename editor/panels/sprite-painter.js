@@ -187,6 +187,17 @@
           h('div', { class: 'sep' }),
           h('button', { onclick: undo, title: 'Ctrl+Z' }, '↶ Undo'), h('button', { onclick: redo, title: 'Ctrl+Y' }, '↷ Redo'),
           h('button', { title: 'Mirror this frame left to right', onclick: () => { pushUndo(); const f = frame(); const FL = ACI.FLIP_H || {}; for (const k of ['ch', 'fg', 'bg']) f[k] = f[k].map(r => r.slice().reverse()); f.ch = f.ch.map(r => r.map(c => FL[c] || c)); changed(); } }, '⇋ Mirror'),
+          h('button', { title: 'Ask Claude to draw frames for this sprite', onclick: async () => {
+            if (!ed.ai || !ed.ai.dialog) { alert('AI generation is not available in this editor.'); return; }
+            try {
+              const j = await ed.ai.dialog({ kind: 'sprite', w: S.doc.w, h: S.doc.h }); if (!j) return;
+              const spr = ACI.fromAsset(ed.ai.toAssetText(j, S.doc.name)); pushUndo();
+              const d = fromText(ed.ai.toAssetText(j, S.doc.name)); const first = Object.keys(d.anims)[0];
+              for (const n in d.anims) S.doc.anims[n] = d.anims[n];
+              if (d.w !== S.doc.w || d.h !== S.doc.h) resizeDoc(S.doc, Math.max(d.w, S.doc.w), Math.max(d.h, S.doc.h));
+              S.anim = first; S.fi = 0; build(); changed();
+            } catch (e) { alert('Generate failed: ' + e.message); }
+          } }, '✦ Generate'),
           h('button', { title: 'Clear this frame', onclick: () => { pushUndo(); const b = blank(S.doc.w, S.doc.h); Object.assign(frame(), b); changed(); } }, 'Clear'),
           h('div', { class: 'sep' }), h('label', { title: 'How many of this sprite\'s cells fit in one map cell. High-res sprites are drawn with finer cells than the world.' }, 'Detail', h('select', { onchange: e => { pushUndo(); S.doc.res = +e.target.value; changed(); } }, [1, 2, 4, 8].map(v => h('option', { value: v, selected: (S.doc.res || 1) === v }, v === 1 ? '1× normal' : v + '× high-res'))), h('span', { class: 'hint' }, (S.doc.res || 1) > 1 ? S.doc.w + '×' + S.doc.h + ' → ' + (S.doc.w / S.doc.res).toFixed(0) + '×' + (S.doc.h / S.doc.res).toFixed(0) + ' map cells' : '')),
           h('div', { class: 'sep' }), h('label', {}, h('input', { type: 'checkbox', checked: S.onion, onchange: e => { S.onion = e.target.checked; drawMain(); } }), 'Onion skin'),
